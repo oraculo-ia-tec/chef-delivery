@@ -100,6 +100,7 @@ propcache==0.2.1
 protobuf==5.29.1
 psutil==7.0.0
 psycopg2==2.9.9
+psycopg2-binary==2.9.10
 pyarrow==18.1.0
 pycparser==2.21
 pydantic==2.10.3
