@@ -5,7 +5,6 @@ from sqlalchemy import Column, Integer, String, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from PIL import Image
-from key_config import DATABASE_URL, WEBHOOK_CADASTRO
 from sqlalchemy.exc import IntegrityError
 
 
