@@ -9,12 +9,11 @@ from key_config import DATABASE_URL, WEBHOOK_CADASTRO
 from sqlalchemy.exc import IntegrityError
 
 
-# Configurações do Webhook cadastro
-cadastro_webhook = WEBHOOK_CADASTRO
+from decouple import config
 
-
-# Configurações do Webhook teste
-WEBHOOK_TESTE = 'https://hook.us2.make.com/s8d7klutrmtyco4wku57ffswkhftl52c'
+WEBHOOK_CADASTRO = config('WEBHOOK_CADASTRO')
+WEBHOOK_TESTE = config('WEBHOOK_TESTE')
+DATABASE_URL = config('DATABASE_URL')
 
 
 # Criando conexão com o banco de dados
@@ -122,7 +121,7 @@ def handle_form_submission(name, cpf_cnpj, email, whatsapp, endereco, cep, bairr
 
         # Envio da requisição
         try:
-            response = requests.post(cadastro_webhook, json=data_make)
+            response = requests.post(WEBHOOK_CADASTRO, json=data_make)
 
             # Verifica a resposta do Webhook
             if response.status_code == 200:
