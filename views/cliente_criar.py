@@ -5,7 +5,7 @@ import plotly.express as px
 from PIL import Image
 from streamlit_extras.metric_cards import style_metric_cards
 import requests
-from key_config import DATABASE_URL
+from key_config import DATABASE_URL, WEBHOOK_CADASTRO
 from pydantic import BaseModel
 import hashlib
 
@@ -13,7 +13,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 
-WEBHOOK_CADASTRO = 'https://hook.us2.make.com/79gbstfq69fycpcotispp3832yrnxyf2'
+WEBHOOK_CADASTRO = 'WEBHOOK_CADASTRO'
 
 
 # Inicializa o aplicativo FastAPI
