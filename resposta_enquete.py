@@ -1,159 +1,148 @@
 import streamlit as st
-import pandas as pd
-import requests
+from sqlalchemy import create_engine, text
 from datetime import datetime
-from typing import List, Dict, Optional
-from key_config import URL_DJANGO_ENQUETE, URL_DJANGO_RESPOSTA
+from key_config import DATABASE_URL
+from pytz import timezone
 
 
-def verificar_resposta_anterior(enquete_id: int, username: str) -> bool:
-    """Verifica se o usuário já respondeu a enquete."""
+
+# Configuração do banco de dados
+engine = create_engine(DATABASE_URL)
+
+# Definir fuso horário
+hoje = datetime.now(timezone('America/Sao_Paulo'))
+
+# Função para buscar enquetes direcionadas ao cargo do usuário
+def buscar_enquetes_por_cargo(cargo_nome):
+    """Busca enquetes direcionadas ao cargo especificado."""
+    cargo_id = obter_id_cargo(cargo_nome)
+    if not cargo_id:
+        st.warning(f"⚠️ O cargo '{cargo_nome}' não está cadastrado.")
+        return []
+
+    st.write(f"Buscando enquetes para o cargo com ID: {cargo_id}")
+    with engine.connect() as connection:
+        query = text("""
+            SELECT e.id, e.titulo, e.descricao, e.data_inicio, e.data_fim, e.ativo, e.opcao1, e.opcao2, e.opcao3, e.opcao4
+            FROM enquete_enquete e
+            JOIN enquete_enquete_direcionado_a eda ON e.id = eda.enquete_id
+            WHERE eda.cargo_id = :cargo_id AND e.ativo = 1 AND e.data_fim >= :hoje
+        """)
+        result = connection.execute(query, {"cargo_id": cargo_id, "hoje": hoje}).fetchall()
+        st.write(f"Resultados encontrados: {result}")
+        return result
+
+
+# Função para salvar a resposta na tabela oraculo_votacao
+def salvar_resposta(enquete_id, usuario_id, opcao_votada):
+    """
+    Salva a resposta do usuário na tabela oraculo_votacao.
+    """
     try:
-        response = requests.get(
-            URL_DJANGO_RESPOSTA,
-            params={'enquete_id': enquete_id, 'username': username},
-            timeout=10
-        )
-        return response.json().get('ja_respondeu', False)
-    except requests.exceptions.Timeout:
-        st.error("Erro: Tempo limite excedido ao verificar resposta anterior.")
-        return False
-    except requests.exceptions.RequestException as e:
-        st.error(f"Erro ao verificar resposta anterior: {str(e)}")
-        return False
-
-
-def handle_form_submission(
-        enquete: Dict,
-        username: str,
-        resposta: str,
-        explicacao: Optional[str] = None
-) -> bool:
-    """Processa o envio da resposta da enquete."""
-    try:
-        # Verifica se a enquete ainda está ativa
-        data_fim = datetime.fromisoformat(enquete['data_fim'])
-        if datetime.now() > data_fim:
-            st.error("Esta enquete já expirou.")
+        # Verifica se o usuário já votou nesta enquete
+        if verificar_voto_existente(enquete_id, usuario_id):
+            st.warning(f"⚠️ Você já respondeu à enquete com ID '{enquete_id}'.")
             return False
 
-        # Verifica se o usuário já respondeu
-        if verificar_resposta_anterior(enquete['id'], username):
-            st.error("Você já respondeu esta enquete anteriormente.")
-            return False
-
-        data_resposta = {
-            'enquete_id': enquete['id'],
-            'username': username,
-            'resposta': resposta,
-            'explicacao': explicacao or ""
-        }
-
-        response = requests.post(
-            URL_DJANGO_RESPOSTA,
-            json=data_resposta,
-            headers={'Content-Type': 'application/json'},
-            timeout=10
-        )
-
-        if response.status_code in [200, 201]:
-            st.success("Sua resposta foi registrada com sucesso!")
-            return True
-        else:
-            error_msg = response.json().get('error', 'Erro desconhecido')
-            st.error(f"Erro ao enviar resposta: {error_msg}")
-            return False
-
-    except requests.exceptions.Timeout:
-        st.error("Erro: Tempo limite excedido ao enviar resposta.")
-        return False
-    except requests.exceptions.RequestException as e:
-        st.error(f"Erro ao enviar resposta: {str(e)}")
-        return False
+        with engine.connect() as connection:
+            query = text("""
+                INSERT INTO oraculo_votacao (enquete_id, usuario_id, opcao_votada, created_dt)
+                VALUES (:enquete_id, :usuario_id, :opcao_votada, :created_dt)
+            """)
+            connection.execute(
+                query,
+                {
+                    "enquete_id": enquete_id,
+                    "usuario_id": usuario_id,
+                    "opcao_votada": opcao_votada,
+                    "created_dt": hoje
+                }
+            )
+            connection.commit()
+            return True  # Retorna True se a inserção for bem-sucedida
     except Exception as e:
-        st.error(f"Erro inesperado: {str(e)}")
-        return False
+        st.error(f"Erro ao salvar resposta para a enquete '{enquete_id}' e usuário '{usuario_id}': {str(e)}")
+        return False  # Retorna False em caso de erro
 
 
-def resposta_enquete():
-    """Gerencia as respostas de enquetes para usuários autenticados."""
-    st.title("Responder Enquetes")
+# Função para obter o ID do cargo com base no nome
+def obter_id_cargo(cargo_nome):
+    """Busca o ID do cargo com base no nome."""
+    with engine.connect() as connection:
+        query = text("SELECT id FROM oraculo_cargo WHERE name = :nome_cargo")
+        result = connection.execute(query, {"nome_cargo": cargo_nome}).fetchone()
+        return result[0] if result and result[0] else None
 
-    # Verifica autenticação
-    if 'authentication_status' not in st.session_state or not st.session_state['authentication_status']:
-        st.error("Você precisa estar autenticado para responder enquetes.")
+
+# Função para verificar se o usuário já votou na enquete
+def verificar_voto_existente(enquete_id, usuario_id):
+    """Verifica se o usuário já votou na enquete."""
+    with engine.connect() as connection:
+        query = text("""
+            SELECT COUNT(*) 
+            FROM oraculo_votacao 
+            WHERE enquete_id = :enquete_id AND usuario_id = :usuario_id
+        """)
+        result = connection.execute(query, {"enquete_id": enquete_id, "usuario_id": usuario_id}).scalar()
+        return result > 0
+
+
+# Função principal para exibir enquetes e registrar respostas
+def resposta_enquete(usuario_id, cargo_nome):
+    """Exibe enquetes direcionadas ao cargo do usuário logado."""
+    st.title("🗳️ Responder Enquetes")
+
+    # Verifica se o cargo existe
+    cargo_id = obter_id_cargo(cargo_nome)
+    if not cargo_id:
+        st.warning(f"⚠️ O cargo '{cargo_nome}' não está cadastrado.")
         return
 
-    # Obtém informações do usuário da sessão
-    username = st.session_state.get('username')
-    role = st.session_state.get('role')
-
-    if not username or not role:
-        st.error("Informações do usuário não encontradas.")
-        return
-
-    # Obtém enquetes disponíveis da sessão (já filtradas por role no app.py)
-    enquetes = st.session_state.get('enquetes_disponiveis', [])
-
+    # Busca as enquetes direcionadas ao cargo
+    enquetes = buscar_enquetes_por_cargo(cargo_nome)
     if not enquetes:
-        st.info("Não há enquetes disponíveis para você no momento.")
+        st.info("ℹ️ Nenhuma enquete disponível para o seu cargo no momento.")
         return
 
-    # Exibe enquetes disponíveis
-    st.subheader("Enquetes Disponíveis")
+    # Exibe as enquetes encontradas
+    for enquete in enquetes:
+        (
+            enquete_id,
+            titulo,
+            descricao,
+            data_inicio,
+            data_fim,
+            ativo,
+            opcao1,
+            opcao2,
+            opcao3,
+            opcao4,
+        ) = enquete
 
-    df_enquetes = pd.DataFrame([{
-        'ID': e['id'],
-        'Título': e['titulo'],
-        'Descrição': e['descricao'],
-        'Início': datetime.fromisoformat(e['data_inicio']).strftime('%d/%m/%Y %H:%M'),
-        'Fim': datetime.fromisoformat(e['data_fim']).strftime('%d/%m/%Y %H:%M'),
-        'Direcionado a': ', '.join(e['direcionado_a'])
-    } for e in enquetes])
+        with st.expander(f"📋 {titulo} (Encerra em {data_fim.strftime('%d/%m/%Y')})"):
+            col1, col2 = st.columns(2)
 
-    st.dataframe(
-        df_enquetes[['Título', 'Descrição', 'Início', 'Fim', 'Direcionado a']],
-        hide_index=True
-    )
+            with col1:
+                st.write(f"**Descrição:** {descricao}")
+                st.write(f"**Período:** {data_inicio.strftime('%d/%m/%Y')} até {data_fim.strftime('%d/%m/%Y')}")
 
-    # Formulário de resposta
-    with st.form(key='resposta_form'):
-        st.subheader("Responder Enquete")
+            with col2:
+                st.write("**Opções disponíveis:**")
+                opcoes = [opcao for opcao in [opcao1, opcao2, opcao3, opcao4] if opcao]
+                opcao_escolhida = st.radio(
+                    "Selecione sua resposta:",
+                    opcoes,
+                    key=f"enquete_{enquete_id}",
+                )
 
-        # Seleção da enquete
-        enquete_selecionada = st.selectbox(
-            "Selecione a enquete",
-            options=enquetes,
-            format_func=lambda x: x['titulo']
-        )
+            # Formulário para enviar a resposta
+            with st.form(key=f"form_{enquete_id}", clear_on_submit=True):
+                submit_button = st.form_submit_button("Enviar Resposta")
 
-        if enquete_selecionada:
-            st.write("**Pergunta:**", enquete_selecionada['descricao'])
-
-            # Opções de resposta
-            opcoes = [
-                enquete_selecionada.get(f'opcao{i}')
-                for i in range(1, 5)
-                if enquete_selecionada.get(f'opcao{i}')
-            ]
-
-            if opcoes:
-                resposta = st.radio("Escolha sua resposta:", options=opcoes)
-                explicacao = st.text_area("Explicação (opcional)", max_chars=500)
-
-                submit = st.form_submit_button("Enviar Resposta")
-
-                if submit:
-                    if verificar_resposta_anterior(enquete_selecionada['id'], username):
-                        st.error("Você já respondeu esta enquete.")
+                if submit_button:
+                    sucesso = salvar_resposta(enquete_id, usuario_id, opcao_escolhida)
+                    if sucesso:
+                        st.success(f"🎉 Sua resposta para a enquete '{titulo}' foi registrada!")
+                        st.session_state[f"form_{enquete_id}"] = {}  # Limpa o estado do formulário
                     else:
-                        success = handle_form_submission(
-                            enquete_selecionada,
-                            username,
-                            resposta,
-                            explicacao
-                        )
-                        if success:
-                            st.rerun()
-            else:
-                st.error("Esta enquete não possui opções de resposta válidas.")
+                        st.error(f"⚠️ Falha ao registrar a resposta para a enquete '{titulo}'. Tente novamente.")

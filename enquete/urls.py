@@ -1,12 +1,12 @@
 # oraculo/urls.py
 
 from django.urls import path
-from .views import criar_usuario, criar_novo_membro, teste_oraculo, enquete_igreja, resposta_enquete
+from .views import criar_enquete, verificar_resposta, CustomAuthToken
 
 urlpatterns = [
-    path('api/criar_usuario/', criar_usuario, name='criar_usuario'),
-    path('api/criar_novo_membro/', criar_novo_membro, name='criar_novo_membro'),
-    path('api/teste_oraculo/', teste_oraculo, name='teste_oraculo'),
-    path('api/enquete_igreja/', enquete_igreja, name='enquete_igreja'),
-    path('api/resposta_enquete/', resposta_enquete, name='resposta_enquete'),
+
+    path('criar_enquete/', criar_enquete, name='criar_enquete'),
+    path('verificar_resposta/<int:enquete_id>/', verificar_resposta, name='verificar_resposta'),
+    path('api/token/', CustomAuthToken.as_view(), name='api_token_auth'),
+
 ]

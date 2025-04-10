@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="pt-br">
+<head>
+	<meta charset="utf-8" />
+	<title>MOVER | Registro</title>
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+	<meta content="" name="description" />
+	<meta content="" name="author" />
+
+	<!-- ================== BEGIN core-css ================== -->
+	<link href="{% static 'css/vendor.min.css' %}" rel="stylesheet" />
+	<link href="{% static 'css/transparent/app.min.css' %}" rel="stylesheet" />
+	<!-- ================== END core-css ================== -->
+</head>
+<body class='pace-top'>
+	<!-- BEGIN page-cover -->
+	<div class="app-cover"></div>
+	<!-- END page-cover -->
+
+	<!-- BEGIN #loader -->
+	<div id="loader" class="app-loader">
+		<span class="spinner"></span>
+	</div>
+	<!-- END #loader -->
+	<div class="conteiner">
+		{% if messages %}
+			{% for m in messages %}
+				<di class="alert alert-{{ m.tags }}">
+					<button type="button" class="close" data-dismiss="alert"></button>
+					<strong>{{ m }}</strong>
+				</di>
+			{% endfor %}
+		{% endif %}
+	</div>
+
+	<!-- BEGIN #app -->
+	<div id="app" class="app">
+		<!-- BEGIN register -->
+		<div class="register register-with-news-feed">
+			<!-- BEGIN news-feed -->
+			<div class="news-feed">
+				<div class="news-image" style="background-image: url({% static 'img/corporate/cad1.jpg' %})"></div>
+				<div class="news-caption">
+					<h4 class="caption-title"><b>MOVER</b></h4>
+					<p>
+						Comece a evolução do seu negócio!
+					</p>
+				</div>
+			</div>
+			<!-- END news-feed -->
+
+			<!-- BEGIN register-container -->
+			<div class="register-container">
+				<!-- BEGIN register-header -->
+				<div class="register-header mb-25px h1">
+					<a href="{% url 'home' %}"><span class=""></span> <b class="me-1">MOVER</b></a>| Associar
+					<small class="d-block fs-15px lh-16">Movimento de Empresários Recomeçar.</small>
+				</div>
+				<!-- END register-header -->
+
+				<!-- BEGIN register-content -->
+				<div class="register-content">
+					<form id="form" action="{% url 'registrar' %}" method="POST" class="fs-13px">
+						{{ error }}
+						{% csrf_token %}
+						<div class="mb-3">
+							<label class="mb-2">USUÁRIO<span class="text-danger">*</span></label>
+							<div class="row gx-3">
+								<div class="col-md-6 mb-2 mb-md-0">
+									<input type="text"  id="usuario" name="usuario" class="form-control fs-13px" placeholder="Usuário" />
+								</div>
+								<div class="col-md-6">
+									<input type="text" id="usuario" name="usuario" class="form-control fs-13px" placeholder="Confirmar usuário" />
+								</div>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<div class="form-group">
+								<label class="mb-2">NOME DA EMPRESA<span class="text-danger">*</span></label>
+								<input type="text" id="empresa" name="empresa" class="form-control fs-13px" placeholder="Nome da sua empresa ou serviço"/>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<div class="form-group">
+								<label class="mb-2">WHATSAPP<span class="text-danger">*</span></label>
+								<input type="text" id="whats" name="whats" class="form-control fs-13px" placeholder="Digite somente numeros" />
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<div class="form-group">
+								<label class="mb-2">E-MAIL<span class="text-danger">*</span></label>
+								<input type="text" id="email" name="email" class="form-control fs-13px" placeholder="Confirmar email" />
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<div class="form-group">
+								<label class="mb-2">SENHA<span class="text-danger">*</span></label>
+								<input type="password" id="senha" name="senha" class="form-control fs-13px" placeholder="Sua senha" />
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<div class="form-group">
+								<label class="mb-2">CONFIRMAR SENHA<span class="text-danger">*</span></label>
+								<input type="password" id="senha" name="senha" class="form-control fs-13px" placeholder="Confirmar senha" />
+							</div>
+						</div>
+
+						<div class="form-check mb-4">
+							<input class="form-check-input" type="checkbox" value="" id="agreementCheckbox" />
+							<label class="form-check-label" for="agreementCheckbox">
+								Ao clicar em CADASTRAR, você concorda com nossos <a href="javascript:;">Termos</a> e que você leu nossa <a href="javascript:;">Política de Dados</a>, incluindo o nosso <a href="javascript:;">Uso de cookies</a>.
+							</label>
+						</div>
+
+						<div class="mb-4">
+							<button id="form-submit" type="submit" class="btn btn-theme d-block w-100 btn-lg h-45px fs-13px">CADASTRAR</button>
+						</div>
+						<div class="login-buttons">
+							<button id="form-submit" type="submit" class="btn btn-theme h-40px d-block w-100 btn-lg" style="background-color: red; color: white;">
+								GOOGLE
+							</button>
+						</div>
+						<p></p>
+						<div class="form-check mb-20px">
+							<input class="form-check-input" type="checkbox" value="" id="rememberMe" />
+							<label class="form-check-label" for="rememberMe">
+								Entrar com Google
+							</label>
+						</div>
+						<div class="login-buttons">
+							<button id="form-submit" type="submit" class="btn btn-theme h-40px d-block w-100 btn-lg" style="background-color: blue; color: white;">
+								FACEBOOK
+							</button>
+						</div>
+						<p></p>
+						<div class="form-check mb-20px">
+							<input class="form-check-input" type="checkbox" value="" id="rememberMe" />
+							<label class="form-check-label" for="rememberMe">
+								Entrar com Facebook
+							</label>
+						</div>
+						<div class="mb-4 pb-5">
+							Já é cadastrado? Click <a href="{% url 'acessa' %}">AQUI</a> para entrar.
+						</div>
+						<hr class="bg-gray-600 opacity-2" />
+						<p class="text-center text-gray-600">
+							&copy;Todos os Direitos Reservados a Flash Digital Tech 2023
+						</p>
+					</form>
+				</div>
+				<!-- END register-content -->
+			</div>
+			<!-- END register-container -->
+		</div>
+		<!-- END register -->
+	</div>
+	<!-- END #app -->
+
+	<!-- ================== BEGIN core-js ================== -->
+	<script src="{% static 'js/vendor.min.js' %}"></script>
+	<script src="{% static 'js/app.min.js' %}"></script>
+	<!-- ================== END core-js ================== -->
+</body>
+</html>

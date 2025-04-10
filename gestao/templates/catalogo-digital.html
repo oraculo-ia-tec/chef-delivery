@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+<head>
+	<meta charset="utf-8" />
+	<title>MOVER | Catálogo Digital</title>
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+	<meta content="" name="description" />
+	<meta content="" name="author" />
+	
+	<!-- ================== BEGIN core-css ================== -->
+	<link href="{% static 'css/e-commerce/vendor.min.css' %}" rel="stylesheet" />
+	<link href="{% static 'css/e-commerce/app.min.css' %}" rel="stylesheet" />
+	<!-- ================== END core-css ================== -->
+</head>
+<body>
+	</div>
+		<!-- END #top-nav -->
+		<!-- BEGIN #header -->
+		<div id="header" class="header">
+			<!-- BEGIN container -->
+			<div class="container">
+				<!-- BEGIN header-container -->
+				<div class="header-container">
+					<!-- BEGIN navbar-toggle -->
+					<button type="button" class="navbar-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#navbar-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<!-- END navbar-toggle -->
+					<!-- BEGIN header-logo -->
+					<div class="header-logo">
+						<a href="{% url 'home' %}">
+							<span class="brand-logo"></span>
+							<span class="brand-text">
+								<span>MOVER |</span>Catálogo Digital
+								<small></small>
+							</span>
+						</a>
+					</div>
+					<!-- END header-logo -->
+					<!-- BEGIN header-nav -->
+					<div class="header-nav">
+						<div class="collapse navbar-collapse" id="navbar-collapse">
+							<ul class="nav justify-content-center">
+								<li class="active"><a href="{% url 'home' %}">Home</a></li>
+								<li class="dropdown dropdown-hover">
+									<a href="{% url 'eventos' %}" data-bs-toggle="dropdown">
+										Eventos
+										<b class=""></b>
+										<span class="arrow top"></span>
+									</a>
+									<div class="dropdown-menu">
+										<a class="dropdown-item" href="product.html">Encontro de Negócio MOVER</a>
+										<a class="dropdown-item" href="product.html">Feirão de Oportunidades MOVER</a>
+										<a class="dropdown-item" href="product.html">Congresso de Empreendedores MOVER</a>
+										<a class="dropdown-item" href="product.html">Festival de Empresas MOVER</a>
+										<a class="dropdown-item" href="product.html">Semana da Parceria MOVER</a>
+										<a class="dropdown-item" href="product.html">EXpor MOVER</a>
+										<a class="dropdown-item" href="product.html">Fórum de Inovação MOVER</a>
+									</div>
+								</li>
+
+								<li class="dropdown dropdown-hover">
+									<a href="{% url 'network-mentorias' %}" data-bs-toggle="dropdown">
+										Network & Mentorias
+										<b class=""></b>
+										<span class="arrow top"></span>
+									</a>
+									<div class="dropdown-menu">
+										<a class="dropdown-item" href="product.html">Formalização Jurídica</a>
+										<a class="dropdown-item" href="product.html">Gestçao Financeira</a>
+										<a class="dropdown-item" href="product.html">Marketing Digital</a>
+										<a class="dropdown-item" href="product.html">Plano de Negócios</a>
+										<a class="dropdown-item" href="product.html">Logística</a>
+										<a class="dropdown-item" href="product.html">Tecnologia</a>
+										<a class="dropdown-item" href="product.html">Responsabilidade Social</a>
+									</div>
+								</li>
+
+								<li><a href="">Responsabilidade Social</a></li>
+								<li class="dropdown dropdown-hover">
+									<a href="" data-bs-toggle="">
+
+										<b class=""></b>
+										<span class="arrow top"></span>
+									</a>
+									<div class="dropdown-menu">
+										<a class="dropdown-item" href="{% url 'home' %}">Home (Default)</a>
+										<a class="dropdown-item" href="{% url 'catalogo-digital' %}">Catálogo Dgital</a>
+										<a class="dropdown-item" href="index_inverse_header.html">Home (Inverse Header)</a>
+										<a class="dropdown-item" href="search_results.html">Search Results</a>
+										<a class="dropdown-item" href="product.html">Product Page</a>
+										<a class="dropdown-item" href="product_detail.html">Product Details Page</a>
+										<a class="dropdown-item" href="checkout_cart.html">Checkout Cart</a>
+										<a class="dropdown-item" href="checkout_info.html">Checkout Shipping</a>
+										<a class="dropdown-item" href="checkout_payment.html">Checkout Payment</a>
+										<a class="dropdown-item" href="checkout_complete.html">Checkout Complete</a>
+										<a class="dropdown-item" href="my_account.html">My Account</a>
+										<a class="dropdown-item" href="contact_us.html">Contact Us</a>
+										<a class="dropdown-item" href="{% url 'quem-somos' %}">Quem Somos</a>
+										<a class="dropdown-item" href="faq.html">FAQ</a>
+									</div>
+								</li>
+
+							</ul>
+						</div>
+					</div>
+					<!-- END header-nav -->
+					<!-- BEGIN header-nav -->
+					<div class="header-nav">
+						<ul class="nav justify-content-end">
+							<li ></li>
+							<li>
+								<div class="header-btn">
+									<a href="{% url 'registrar' %}" class="btn btn-primary fw-bold rounded-pill">QUERO ASSOCIAR<i class="fa fa-arrow-right ms-1 opacity-5"></i></a>
+								</div>
+
+							</li>
+						</ul>
+					</div>
+					<!-- END header-nav -->
+				</div>
+				<!-- END header-container -->
+			</div>
+			<!-- END container -->
+		</div>
+		<!-- END #header -->
+		
+		<!-- BEGIN #page-header -->
+		<div id="page-header" class="section-container page-header-container bg-dark">
+			<!-- BEGIN page-header-cover -->
+			<div class="page-header-cover">
+				<img src="../assets/img/cover/cover-12.jpg" alt="" />
+			</div>
+			<!-- END page-header-cover -->
+			<!-- BEGIN container -->
+			<div class="container">
+				<h1 class="page-header"><b>CATÁLOGO</b> DIGITAL</h1>
+			</div>
+			<!-- END container -->
+		</div>
+		<!-- BEGIN #page-header -->
+		
+		<!-- BEGIN search-results -->
+		<div id="search-results" class="section-container">
+			<!-- BEGIN container -->
+			<div class="container">
+				<!-- BEGIN search-container -->
+				<div class="search-container">
+					<!-- BEGIN search-sidebar -->
+					{% for mv in mover %}
+					<div class="search-sidebar">
+						<h2 class="title">Para se tornar um associado no MOVER leia o QRCODE ou clique no link abaixo :</h2>
+						<form action="product.html" method="POST" name="filter_form">
+							<div class="mb-3">
+								<label class="form-label">LEIA O QRCODE COM A CÂMERA DO SEU CELULAR:</label>
+								<div class="product-main-image" data-id="main-image">
+									<img src="{{ mv.qrcode.thumb.url }}" alt="" width="270" height="300"/>
+								</div>
+							</div>
+							<div class="mb-2">
+								<label class="form-label">CLIQUE NO LINK:</label>
+								<div class="row row-space-1">
+									<div class="col-md-10">
+										<a
+										  href="{{ mv.link_cadastro }}"
+										  class="green-link">
+										  CLIQUE-AQUI-PARA-SE-ASSOCIAR
+										</a>
+									</div>
+								</div>
+							</div>
+
+						</form>
+					{% endfor %}
+					</div>
+					<!-- END search-sidebar -->
+					<!-- BEGIN search-content -->
+					<div class="search-content">
+						<!-- BEGIN search-toolbar -->
+						<div class="search-toolbar">
+							<!-- BEGIN row -->
+							<div class="row">
+								<div class="col-lg-6">
+									<h3></h3>
+								</div>
+								<!-- END col-6 -->
+								<!-- BEGIN col-6 -->
+								<div class="container">
+								  <div class="text-center">
+									<h2>ASSOCIADOS</h2>
+								  </div>
+								</div>
+								<!-- END col-6 -->
+							</div>
+							<!-- END row -->
+						</div>
+						<!-- END search-toolbar -->
+						<!-- BEGIN search-item-container -->
+						{% for a in associados %}
+
+								<div class="mb-10px mt-10px fs-10px">
+								<a href="#modal-widget-table" class="float-end text-body text-opacity-50 text-decoration-none me-3px fw-bold" data-bs-toggle="modal"></a>
+								<b class="text-body"></b>
+							</div>
+							<!-- BEGIN widget-table -->
+							<div class="table-responsive">
+								<!-- BEGIN widget-table -->
+								<table class="table table-bordered widget-table rounded" data-id="widget">
+									<thead>
+										<tr class="text-nowrap center-title">
+											<th width="1%">Empresa</th>
+											<th>Informação</th>
+											<th>Preço</th>
+											<th>Categoria</th>
+											<th>Desconto</th>
+											<th>Instagram</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												<img src={{ a.logo.thumb.url }} width="100" />
+											</td>
+											<td>
+												<h5 class="mb-1">{{ a.empresa }}</h5>
+												<p class="fs-11px fw-bold text-body text-opacity-50 mb-3">{{ a.descricao }}</p>
+
+											</td>
+											<td class="text-nowrap">
+												<b class="text-body">R${{ a.preco_servico }}</b><br/>
+												<small><del></del></small>
+											</td>
+											<td>{{ a.categoria }}</td>
+											<td>{{ a.desconto }}%</td>
+											<td>
+												<a href="{{ a.instagram }}" class="btn w-100px btn-social btn-instagram float-start">
+												  <span class="fab fa-instagram"></span>
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<!-- END widget-table -->
+							</div>
+							<!-- END table-responsive -->
+						{% endfor %}
+								<!-- END item -->
+								<!-- BEGIN item -->
+
+								<!-- END item -->
+								<!-- BEGIN item -->
+
+								<!-- END item -->
+							</div>
+							<!-- END item-row -->
+							<!-- BEGIN item-row -->
+							<div class="item-row">
+								<!-- BEGIN item -->
+
+								<!-- END item -->
+							</div>
+							<!-- END item-row -->
+							<!-- BEGIN item-row -->
+							<div class="item-row">
+								<!-- BEGIN item -->
+								<div class="item item-thumbnail">
+
+								</div>
+								<!-- END item -->
+								<!-- BEGIN item -->
+								<div class="item item-thumbnail">
+
+								</div>
+								<!-- END item -->
+								<!-- BEGIN item -->
+								<div class="item item-thumbnail">
+
+
+								</div>
+								<!-- END item -->
+							</div>
+							<!-- END item-row -->
+						</div>
+						<!-- END search-item-container -->
+						<!-- BEGIN pagination -->
+					{% if is_paginated %}
+						<ul class="pagination justify-content-center mt-0">
+							{% if page_obj.has_previous %}
+								<li class="page-item disabled"><a href="?page={{ page_obj.previous_page_number }}" class="page-link">Anterior</a></li>
+							{% else %}
+								<li class="page-item active"><a class="page-link" href="javascript:;">{{ num }}</a></li>
+							{% endif %}
+							{% for num in paginator.page_range %}
+								 {% if page_obj.number == num %}
+									<li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+								{% else %}
+									<li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+								{% endif %}
+							{% endfor %}
+							{% if page_obj.has_next %}
+									<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"></a></li>
+							{% else %}
+									<li class="page-item disabled"><a class="page-link" href="javascript:;">Próximo</a></li>
+							{% endif %}
+						</ul>
+					{% endif %}
+						<!-- END pagination -->
+					</div>
+					<!-- END search-content -->
+				</div>
+				<!-- END search-container -->
+			</div>
+			<!-- END container -->
+		</div>
+		<!-- END search-results -->
+		
+		<!-- BEGIN #footer -->
+		<div id="footer" class="footer">
+			<!-- BEGIN container -->
+			<div class="container">
+				<!-- BEGIN row -->
+				<div class="row">
+					<!-- BEGIN col-3 -->
+					<div class="col-lg-3">
+						<h4 class="footer-header">MOVER</h4>
+						<p>
+							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec tristique dolor, ac efficitur velit. Nulla lobortis tempus convallis. Nulla aliquam lectus eu porta pulvinar. Mauris semper justo erat. 
+						</p>
+						<p class="mb-lg-4 mb-0">
+							Vestibulum porttitor lorem et vestibulum pharetra. Phasellus sit amet mi congue, hendrerit mi ut, dignissim eros.
+						</p>
+					</div>
+					<!-- END col-3 -->
+					<!-- BEGIN col-3 -->
+					<div class="col-lg-3">
+						<h4 class="footer-header">NETWORK & MENTORIAS</h4>
+						<ul class="fa-ul mb-lg-4 mb-0 p-0">
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Shopping Help</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Terms of Use</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Contact Us</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Careers</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Payment Method</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Sales & Refund</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Sitemap</a></li>
+							<li><i class="fa fa-fw fa-angle-right"></i> <a href="#">Privacy & Policy</a></li>
+						</ul>
+					</div>
+					<!-- END col-3 -->
+					<!-- BEGIN col-3 -->
+					<div class="col-lg-3">
+						<h4 class="footer-header">ASSOCIADOS</h4>
+						<ul class="list-unstyled list-product mb-lg-4 mb-0 p-0">
+							<li>
+								<div class="image">
+									<img src="../assets/img/product/product-iphone-6s.jpg" alt="" />
+								</div>
+								<div class="info">
+									<h4 class="info-title">Iphone 6s</h4>
+									<div class="price">$1200.00</div>
+								</div>
+							</li>
+							<li>
+								<div class="image">
+									<img src="../assets/img/product/product-galaxy-s6.jpg" alt="" />
+								</div>
+								<div class="info">
+									<h4 class="info-title">Samsung Galaxy s7</h4>
+									<div class="price">$850.00</div>
+								</div>
+							</li>
+							<li>
+								<div class="image">
+									<img src="../assets/img/product/product-ipad-pro.jpg" alt="" />
+								</div>
+								<div class="info">
+									<h4 class="info-title">Ipad Pro</h4>
+									<div class="price">$800.00</div>
+								</div>
+							</li>
+							<li>
+								<div class="image">
+									<img src="../assets/img/product/product-galaxy-note5.jpg" alt="" />
+								</div>
+								<div class="info">
+									<h4 class="info-title">Samsung Galaxy Note 5</h4>
+									<div class="price">$1200.00</div>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<!-- END col-3 -->
+					<!-- BEGIN col-3 -->
+					<div class="col-lg-3">
+						<h4 class="footer-header">CONTATOS</h4>
+						<address class="mb-lg-4 mb-0">
+							<strong>MOVER</strong><br />
+							Comunidade Cristâ Recomeçar<br />
+							San Francisco, CA 94103<br /><br />
+							<abbr title="Phone">Phone:</abbr> (123) 456-7890<br />
+							<abbr title="Fax">Fax:</abbr> (123) 456-7891<br />
+							<abbr title="Email">Email:</abbr> <a href="contato@moverbrasil.com.br">contato@moverbrasil.com.br</a><br />
+							<abbr title="Skype">Instagram:</abbr> <a href=""></a>
+						</address>
+					</div>
+					<!-- END col-3 -->
+				</div>
+				<!-- END row -->
+			</div>
+			<!-- END container -->
+		</div>
+		<!-- END #footer -->
+		
+		<!-- BEGIN #footer-copyright -->
+		<div id="footer-copyright" class="footer-copyright">
+			<!-- BEGIN container -->
+			<div class="container">
+				<div class="payment-method">
+					<img src="../assets/img/payment/payment-method.png" alt="" />
+				</div>
+				<div class="copyright">
+					Copyright &copy; 2023 Flash Digital Tech. Todos os direitos reservados ao MOVER.
+				</div>
+			</div>
+			<!-- END container -->
+		</div>
+		<!-- END #footer-copyright -->
+	</div>
+	<!-- END #app -->
+
+	<!-- BEGIN theme-panel -->
+	<div class="theme-panel">
+		<a href="javascript:;" data-toggle="theme-panel-expand" class="theme-collapse-btn"><i class="fa fa-cog"></i></a>
+		<div class="theme-panel-content">
+			<div class="theme-list clearfix">
+				<div class="theme-list-item"><a href="javascript:;" class="bg-red" data-theme-class="theme-red" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Red" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-pink" data-theme-class="theme-pink" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Pink" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-orange" data-theme-class="theme-orange" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Orange" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-yellow" data-theme-class="theme-yellow" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Yellow" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-lime" data-theme-class="theme-lime" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Lime" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-green" data-theme-class="theme-green" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Green" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item active"><a href="javascript:;" class="bg-teal" data-theme-class="" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Default" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-cyan" data-theme-class="theme-cyan" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Aqua" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-blue" data-theme-class="theme-blue" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Blue" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-purple" data-theme-class="theme-purple" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Purple" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-indigo" data-theme-class="theme-indigo" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Indigo" data-original-title="" title="">&nbsp;</a></div>
+				<div class="theme-list-item"><a href="javascript:;" class="bg-gray-500" data-theme-class="theme-gray-500" data-toggle="theme-selector" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-container="body" data-bs-title="Gray" data-original-title="" title="">&nbsp;</a></div>
+			</div>
+			<hr class="mb-0" />
+			<div class="row mt-10px pt-3px">
+				<div class="col-9 control-label text-dark fw-bold">
+					<div>Dark Mode <span class="badge bg-primary ms-1 position-relative py-4px px-6px" style="top: -1px">NEW</span></div>
+					<div class="lh-14 fs-13px">
+						<small class="text-dark opacity-50">
+							Adjust the appearance to reduce glare and give your eyes a break.
+						</small>
+					</div>
+				</div>
+				<div class="col-3 d-flex">
+					<div class="form-check form-switch ms-auto mb-0 mt-2px">
+						<input type="checkbox" class="form-check-input" name="app-theme-dark-mode" id="appThemeDarkMode" value="1" />
+						<label class="form-check-label" for="appThemeDarkMode">&nbsp;</label>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END theme-panel -->
+  
+<!-- ================== BEGIN BASE JS ================== -->
+	<script src="{% static 'js/e-commerce/vendor.min.js' %}"></script>
+	<script src="{% static 'js/e-commerce/app.min.js' %}"></script>
+	
+</body>
+</html>
