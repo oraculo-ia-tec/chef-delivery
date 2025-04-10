@@ -12,7 +12,7 @@ from langchain.prompts import ChatPromptTemplate
 import replicate
 import base64
 from datetime import datetime, timedelta
-from produtos import showProduto
+from produtos_V2 import cadastrar_produto
 
 from sqlalchemy import create_engine, text, MetaData
 from key_config import DATABASE_URL
