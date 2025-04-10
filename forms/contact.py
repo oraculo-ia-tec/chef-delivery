@@ -5,16 +5,12 @@ from sqlalchemy import Column, Integer, String, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from PIL import Image
-from key_config import DATABASE_URL, WEBHOOK_CADASTRO
 from sqlalchemy.exc import IntegrityError
 
 
-# Configurações do Webhook cadastro
-cadastro_webhook = WEBHOOK_CADASTRO
+from decouple import config
 
-
-# Configurações do Webhook teste
-WEBHOOK_TESTE = 'https://hook.us2.make.com/s8d7klutrmtyco4wku57ffswkhftl52c'
+WEBHOOK_CADASTRO = config('WEBHOOK_CADASTRO')
 
 
 # Criando conexão com o banco de dados
