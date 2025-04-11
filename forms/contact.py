@@ -33,7 +33,7 @@ def is_valid_email(email):
 
 
 @st.dialog("Cadastro")
-def cadastrar_cliente():
+def cadastrar_membro():
     st.title("Sistema Oráculos IA")
 
     # Usando st.expander para criar um formulário expansível
