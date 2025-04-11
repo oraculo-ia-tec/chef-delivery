@@ -23,11 +23,6 @@ STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET")
 if not STRIPE_WEBHOOK_SECRET:
     raise ValueError("A variável de ambiente STRIPE_WEBHOOK_SECRET não está definida. Verifique o arquivo .env.")
 
-# Chave do Webhook do MAKE CADASTRO
-WEBHOOK_URL = config("WEBHOOK_URL")
-if not WEBHOOK_URL:
-    raise ValueError("A variável de ambiente WEBHOOK_URL não está definida. Verifique o arquivo .env.")
-
 # Chave do Webhook do MAKE AGENDA
 WEBHOOK_AGENDA = config("WEBHOOK_AGENDA")
 if not WEBHOOK_AGENDA:  # Corrigido para validar WEBHOOK_AGENDA
