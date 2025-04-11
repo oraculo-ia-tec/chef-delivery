@@ -1,0 +1,44 @@
+from decouple import config
+
+# URL base da API do Stripe
+URL_BASE = "https://api.stripe.com/v1"
+
+# Chave da API do Banco de Dados
+DATABASE_URL = config("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("A variável de ambiente DATABASE_URL não está definida. Verifique o arquivo .env.")
+
+# Chave da API do Stripe
+API_KEY_STRIPE = config("API_KEY_STRIPE")
+if not API_KEY_STRIPE:
+    raise ValueError("A variável de ambiente API_KEY_STRIPE não está definida. Verifique o arquivo .env.")
+
+# Chave da API do ASAAS
+ASAAS_API_KEY = config("ASAAS_API_KEY")
+if not ASAAS_API_KEY:
+    raise ValueError("A variável de ambiente ASAAS_API_KEY não está definida. Verifique o arquivo .env.")
+
+# Chave do Webhook do Stripe
+STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET")
+if not STRIPE_WEBHOOK_SECRET:
+    raise ValueError("A variável de ambiente STRIPE_WEBHOOK_SECRET não está definida. Verifique o arquivo .env.")
+
+# Chave do Webhook do MAKE CADASTRO
+WEBHOOK_URL = config("WEBHOOK_URL")
+if not WEBHOOK_URL:
+    raise ValueError("A variável de ambiente WEBHOOK_URL não está definida. Verifique o arquivo .env.")
+
+# Chave do Webhook do MAKE AGENDA
+WEBHOOK_AGENDA = config("WEBHOOK_AGENDA")
+if not WEBHOOK_AGENDA:  # Corrigido para validar WEBHOOK_AGENDA
+    raise ValueError("A variável de ambiente WEBHOOK_AGENDA não está definida. Verifique o arquivo .env.")
+
+# Chave do Webhook do MAKE TESTE
+WEBHOOK_TESTE = config("WEBHOOK_TESTE")
+if not WEBHOOK_TESTE:
+    raise ValueError("A variável de ambiente WEBHOOK_TESTE não está definida. Verifique o arquivo .env.")
+
+# Chave do Webhook do MAKE CADASTRO
+WEBHOOK_CADASTRO = config("WEBHOOK_CADASTRO")
+if not WEBHOOK_CADASTRO:
+    raise ValueError("A variável de ambiente WEBHOOK_CADASTRO não está definida. Verifique o arquivo .env.")
