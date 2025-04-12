@@ -27,7 +27,7 @@ from util import DizimoOferta
 
 REPLICATE_API_TOKEN = config("REPLICATE_API_TOKEN")
 DATABASE_URL = config("DATABASE_URL")
-engine = create_engine(url_database)
+engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
 
@@ -832,7 +832,7 @@ def show_mestre_biblia():
             return iter([])  # Retorna um gerador vazio para evitar erro de iteração
 
     # User-provided prompt
-    if prompt := st.chat_input(disabled=not key_replicate):        # Para o Replicate : REPLICATE_API_TOKEN
+    if prompt := st.chat_input(disabled=not REPLICATE_API_TOKEN):        # Para o Replicate : REPLICATE_API_TOKEN
         st.session_state.messages_mestre.append({"role": "user", "content": prompt})
 
         # Chama a função para obter a imagem correta
