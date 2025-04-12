@@ -13,6 +13,7 @@ from views.cliente_criar import showMembro
 from views.financeiro import showFinanceiro
 from views.link_pagamento import show_pagamento_links
 from produtos_V2 import cadastrar_produto
+from views.membro_v3 import showMembro
 from novo_membro import show_novo_membro
 from loja import criar_loja, show_loja
 from views.parceiro import showParceiro
