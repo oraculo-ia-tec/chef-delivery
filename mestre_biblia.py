@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from produtos_V2 import cadastrar_produto
 
 from sqlalchemy import create_engine, text, MetaData
-from key_config import DATABASE_URL, REPLICATE_API_TOKEN
+from decouple import config
 from sqlalchemy import Column, BigInteger, String, Text, DECIMAL, Integer, Enum, Time, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -25,8 +25,8 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from util import DizimoOferta
 
 
-key_replicate = REPLICATE_API_TOKEN
-url_database = DATABASE_URL
+REPLICATE_API_TOKEN = config("REPLICATE_API_TOKEN")
+DATABASE_URL = config("DATABASE_URL")
 engine = create_engine(url_database)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
