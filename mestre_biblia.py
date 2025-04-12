@@ -165,7 +165,7 @@ def verificar_usuario():
     return credentials
 
 
-REPLICATE_API_TOKEN = config("REPLICATE_API_TOKEN")
+REPLICATE_API_TOKEN = REPLICATE_API_TOKEN
 
 
 dizimo_oferta = DizimoOferta()
