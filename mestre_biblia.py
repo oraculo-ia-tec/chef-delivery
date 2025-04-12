@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from produtos_V2 import cadastrar_produto
 
 from sqlalchemy import create_engine, text, MetaData
-from key_config import DATABASE_URL
+from key_config import DATABASE_URL, REPLICATE_API_TOKEN
 from sqlalchemy import Column, BigInteger, String, Text, DECIMAL, Integer, Enum, Time, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -165,7 +165,7 @@ def verificar_usuario():
     return credentials
 
 
-REPLICATE_API_TOKEN = st.secrets["REPLICATE_API_TOKEN"]
+REPLICATE_API_TOKEN = config("REPLICATE_API_TOKEN")
 
 
 dizimo_oferta = DizimoOferta()
