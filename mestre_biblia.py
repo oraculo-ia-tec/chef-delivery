@@ -25,8 +25,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from util import DizimoOferta
 
 
-DATABASE_URL = DATABASE_URL
-engine = create_engine(DATABASE_URL)
+key_replicate = REPLICATE_API_TOKEN
+url_database = DATABASE_URL
+engine = create_engine(url_database)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
 
@@ -146,7 +147,7 @@ def get_db_session():
 
 # --- FUNÇÃO PARA VERIFICAR USUÁRIO E PERMISSÕES ---
 def verificar_usuario():
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(url_database)
     with engine.connect() as connection:
         query = text("SELECT username, password, cargo_id, name, email FROM oraculo_user")
         result = connection.execute(query)
@@ -163,9 +164,6 @@ def verificar_usuario():
             }
         }
     return credentials
-
-
-REPLICATE_API_TOKEN = REPLICATE_API_TOKEN
 
 
 dizimo_oferta = DizimoOferta()
@@ -834,7 +832,7 @@ def show_mestre_biblia():
             return iter([])  # Retorna um gerador vazio para evitar erro de iteração
 
     # User-provided prompt
-    if prompt := st.chat_input(disabled=not REPLICATE_API_TOKEN):        # Para o Replicate : REPLICATE_API_TOKEN
+    if prompt := st.chat_input(disabled=not key_replicate):        # Para o Replicate : REPLICATE_API_TOKEN
         st.session_state.messages_mestre.append({"role": "user", "content": prompt})
 
         # Chama a função para obter a imagem correta
