@@ -9,7 +9,6 @@ from datetime import datetime
 # Importação das views
 from mestre_biblia import show_mestre_biblia
 from conta_loja import showConta
-from views.cliente_criar import showMembro
 from views.financeiro import showFinanceiro
 from views.link_pagamento import show_pagamento_links
 from produtos_V2 import cadastrar_produto
