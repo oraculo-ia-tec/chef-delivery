@@ -214,7 +214,7 @@ def agendar_reuniao():
 
 
 @st.dialog("Oráculo Coach")
-def cadastro_teste():
+def cadastrar_teste():
     st.title("Cadastro de Teste")
 
     # Inicializa os campos no session_state se não existirem
