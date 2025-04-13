@@ -19,6 +19,8 @@ from sqlalchemy import (create_engine, Column, BigInteger, String, Text, DECIMAL
 # Configuração da API do Asaas
 BASE_URL_ASAAS = config("BASE_URL_ASAAS")
 ASAAS_API_KEY = config("ASAAS_API_KEY")
+DATABASE_URL = config("DATABASE_URL")
+
 
 # Configuração do banco de dados
 engine = create_engine(DATABASE_URL)
