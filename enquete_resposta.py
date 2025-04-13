@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from typing import Optional, Dict, List
 import requests
 import pandas as pd
-from key_config import DATABASE_URL, URL_DJANGO_ENQUETE, TOKEN_API_DJANGO, URL_TOKEN_API
+from key_config import DATABASE_URL
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, ForeignKey, text, func
 from sqlalchemy.orm import sessionmaker, declarative_base
 from streamlit_extras.metric_cards import style_metric_cards
