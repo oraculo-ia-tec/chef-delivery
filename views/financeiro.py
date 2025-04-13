@@ -7,7 +7,7 @@ import os
 import re
 import numpy as np
 from streamlit_extras.metric_cards import style_metric_cards
-from key_config import DATABASE_URL, BASE_URL_ASAAS, ASAAS_API_KEY
+from decouple import config
 import requests
 
 
@@ -17,9 +17,8 @@ from sqlalchemy import (create_engine, Column, BigInteger, String, Text, DECIMAL
                         ForeignKey, text, func, Float, Enum, Numeric, Time,Date )
 
 # Configuração da API do Asaas
-ASAAS_API_KEY = ASAAS_API_KEY
-BASE_URL_ASAAS = BASE_URL_ASAAS
-
+BASE_URL_ASAAS = config("BASE_URL_ASAAS")
+ASAAS_API_KEY = config("ASAAS_API_KEY")
 
 # Configuração do banco de dados
 engine = create_engine(DATABASE_URL)
