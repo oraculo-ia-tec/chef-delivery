@@ -13,17 +13,18 @@ import json
 import replicate
 from langchain.llms import Replicate
 import base64
-from produtos import showProduto
+from produtos_V2 import cadastrar_produto
 
 from sqlalchemy import create_engine, text, MetaData
-from key_config import DATABASE_URL
+from decouple import config
 from contextlib import contextmanager
 from textblob import TextBlob  # Para análise de sentimentos
 from sqlalchemy.orm import sessionmaker, declarative_base
 from util import DizimoOferta
 
 
-DATABASE_URL = DATABASE_URL
+REPLICATE_API_TOKEN = config("REPLICATE_API_TOKEN")
+DATABASE_URL = config("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
@@ -59,8 +60,6 @@ def get_db_session():
     finally:
         session.close()
 
-
-REPLICATE_API_TOKEN = st.secrets["REPLICATE_API_TOKEN"]
 
 def showTeste():
 
