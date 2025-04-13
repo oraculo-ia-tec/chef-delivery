@@ -1,14 +1,10 @@
 import streamlit as st
 import requests
 import pandas as pd
-from decouple import config  # Para carregar variáveis de ambiente
+from key_config import ASAAS_API_KEY  # Certifique-se de que o token está definido corretamente
 
 # Configuração da API do Asaas
-BASE_URL = "https://api-sandbox.asaas.com/v3/payments"  # Endpoint correto
-
-# Carregar o token de acesso de forma segura
-key_asaas = config("ASAAS_API_KEY")  # Substitua pelo seu token no arquivo .env
-print(key_asaas)
+BASE_URL = "https://api-sandbox.asaas.com/v3/payments"
 
 # Função para listar pagamentos
 def listar_pagamentos():
@@ -16,7 +12,7 @@ def listar_pagamentos():
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "Authorization": f"Bearer {key_asaas}"
+            "Authorization": f"Bearer {ASAAS_API_KEY}"
         }
 
         response = requests.get(BASE_URL, headers=headers)
@@ -30,10 +26,14 @@ def listar_pagamentos():
             return []
 
         if response.status_code != 200:
-            st.error(f"❌ Erro ao listar pagamentos: {response.status_code}")
+            st.error(f"❌ Erro ao listar pagamentos: {response.status_code} - {response.text}")
             return []
 
-        dados_pagamento = response.json()
+        if response.headers.get('Content-Type') == 'application/json':
+            dados_pagamento = response.json()
+        else:
+            st.error("❌ Resposta não está em formato JSON.")
+            return []
 
         # Verificar se a resposta contém dados válidos
         if not dados_pagamento or 'data' not in dados_pagamento or not dados_pagamento['data']:
@@ -45,7 +45,6 @@ def listar_pagamentos():
     except Exception as e:
         st.error(f"❌ Erro ao conectar à API do Asaas: {str(e)}")
         return []
-
 
 # Criação da interface Streamlit
 st.title("📋 Lista de Pagamentos do Asaas")

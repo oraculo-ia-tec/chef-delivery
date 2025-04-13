@@ -19,7 +19,6 @@ config_handler.py
 0.26.0
 0.26.0'
 
-key_config.py
 .streamlit
 db.sqlite3
 oraculo-coach
