@@ -1,88 +1,78 @@
-import streamlit as st
-import requests
-import pandas as pd
-from key_config import ASAAS_API_KEY  # Certifique-se de que o token está definido corretamente
+import sqlalchemy as sa
+from sqlalchemy.orm import sessionmaker
+from typing import Optional
+from sqlalchemy.orm import Session
+from sqlalchemy.future.engine import Engine
+from oraculo.__models_oraculo.model_base import ModelBase
+from decouple import config
 
-# Configuração da API do Asaas
-BASE_URL = "https://api-sandbox.asaas.com/v3/payments"
 
-# Função para listar pagamentos
-def listar_pagamentos():
+class DBSessionManager:
+    """
+    Classe para gerenciar a conexão e sessões do banco de dados.
+    """
+    __engine: Optional[Engine] = None
+
+    @staticmethod
+    def create_engine() -> Engine:
+        """
+        Configura a conexão ao banco de dados.
+        """
+        if DBSessionManager.__engine:
+            return DBSessionManager.__engine
+
+        try:
+            conn_str = config("DATABASE_URL")
+            DBSessionManager.__engine = sa.create_engine(url=conn_str, echo=False)
+            return DBSessionManager.__engine
+        except Exception as e:
+            raise ConnectionError(f"Erro ao conectar ao banco de dados: {e}")
+
+    @staticmethod
+    def create_session() -> Session:
+        """
+        Cria uma sessão de conexão ao banco de dados.
+        """
+        if not DBSessionManager.__engine:
+            DBSessionManager.create_engine()
+
+        __session = sessionmaker(DBSessionManager.__engine, expire_on_commit=False, class_=Session)
+        session: Session = __session()
+        return session
+
+    @staticmethod
+    def create_tables(drop_existing: bool = False) -> None:
+        """
+        Cria as tabelas no banco de dados.
+        :param drop_existing: Se True, exclui todas as tabelas existentes antes de criar novas.
+        """
+        if not DBSessionManager.__engine:
+            DBSessionManager.create_engine()
+
+        if drop_existing:
+            print("⚠️ ATENÇÃO: Todas as tabelas existentes serão excluídas!")
+            ModelBase.metadata.drop_all(DBSessionManager.__engine)
+
+        ModelBase.metadata.create_all(DBSessionManager.__engine)
+        print("✅ Tabelas criadas com sucesso!")
+
+
+# Funções públicas para uso externo
+def get_engine() -> Engine:
+    return DBSessionManager.create_engine()
+
+
+def get_session() -> Session:
+    return DBSessionManager.create_session()
+
+def setup_database(drop_existing: bool = False) -> None:
+    DBSessionManager.create_tables(drop_existing)
+
+
+def test_connection(engine: Engine):
     try:
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "Authorization": f"Bearer {ASAAS_API_KEY}"
-        }
-
-        response = requests.get(BASE_URL, headers=headers)
-
-        # Log da resposta da API
-        st.write("Status Code:", response.status_code)
-        st.write("Response Body:", response.text)
-
-        if response.status_code == 401:
-            st.error("❌ Erro: Token de acesso inválido ou sem permissões.")
-            return []
-
-        if response.status_code != 200:
-            st.error(f"❌ Erro ao listar pagamentos: {response.status_code} - {response.text}")
-            return []
-
-        if response.headers.get('Content-Type') == 'application/json':
-            dados_pagamento = response.json()
-        else:
-            st.error("❌ Resposta não está em formato JSON.")
-            return []
-
-        # Verificar se a resposta contém dados válidos
-        if not dados_pagamento or 'data' not in dados_pagamento or not dados_pagamento['data']:
-            st.warning("⚠️ Nenhum pagamento encontrado.")
-            return []
-
-        return dados_pagamento.get('data', [])  # Retorna a lista de pagamentos
-
+        with engine.connect() as conn:
+            conn.execute(sa.text("SELECT 1"))
+        print("✅ Conexão com o banco de dados estabelecida com sucesso!")
     except Exception as e:
-        st.error(f"❌ Erro ao conectar à API do Asaas: {str(e)}")
-        return []
-
-# Criação da interface Streamlit
-st.title("📋 Lista de Pagamentos do Asaas")
-
-# Botão para carregar pagamentos
-if st.button("🔄 Carregar Pagamentos"):
-    pagamentos = listar_pagamentos()
-
-    if pagamentos:
-        # Transformar a lista de pagamentos em um DataFrame
-        df_pagamentos = pd.DataFrame(pagamentos)
-
-        # Filtrar colunas relevantes
-        colunas_relevantes = [
-            "id", "customer", "value", "status", "billingType", "dateCreated", "dueDate", "paymentDate"
-        ]
-        df_pagamentos = df_pagamentos[colunas_relevantes]
-
-        # Renomear colunas para facilitar a leitura
-        df_pagamentos.rename(columns={
-            "id": "ID",
-            "customer": "Usuário ID",
-            "value": "Valor",
-            "status": "Status",
-            "billingType": "Método de Pagamento",
-            "dateCreated": "Data de Criação",
-            "dueDate": "Data de Vencimento",
-            "paymentDate": "Hora do Pagamento"
-        }, inplace=True)
-
-        # Formatar datas
-        df_pagamentos["Data de Criação"] = pd.to_datetime(df_pagamentos["Data de Criação"]).dt.strftime('%Y-%m-%d')
-        df_pagamentos["Data de Vencimento"] = pd.to_datetime(df_pagamentos["Data de Vencimento"]).dt.strftime('%Y-%m-%d')
-        df_pagamentos["Hora do Pagamento"] = df_pagamentos["Hora do Pagamento"].fillna("Não pago").apply(
-            lambda x: x[:10] if x != "Não pago" else x
-        )
-
-        # Exibir os dados em uma tabela
-        st.dataframe(df_pagamentos)
-    else:
-        st.warning("⚠️ Nenhum pagamento encontrado.")
+        raise ConnectionError(f"Erro ao testar a conexão com o banco de dados: {e}")

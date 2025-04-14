@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/chef-delivery" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/oraculo-coach" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/test-git/oraculo-biblia-flash" vcs="Git" />
   </component>

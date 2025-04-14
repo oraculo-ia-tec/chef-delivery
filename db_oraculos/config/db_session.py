@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.future.engine import Engine
-from oraculo.__models_oraculo.model_base import ModelBase
+from models.model_base import ModelBase
 from decouple import config
 
 
