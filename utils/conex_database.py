@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from models.authors import User, Admin, Parceiro, Cliente  # Certifique-se de importar seus modelos corretamente
 
 # URL de conexão com o banco de dados MySQL
-DATABASE_URL = "mysql://root:root@localhost/frigorifico"  # Atualize conforme necessário
+DATABASE_URL = "mysql+pymysql://root:root@localhost/frigorifico"  # Atualize conforme necessário
 
 # Criação do motor de conexão
 engine = create_engine(DATABASE_URL)
