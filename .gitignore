@@ -1,0 +1,37 @@
+# Virtual environment
+venv/
+.venv/
+*.tmp
+share/
+Scripts/
+Include/
+etc/
+Library/
+Lib/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables (senhas e chaves)
+.env
+
+# Streamlit secrets (local)
+.streamlit/secrets.toml
+.streamlit/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Database files
+*.db
+*.sqlite3
+tokens.json
+
