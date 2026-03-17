@@ -21,7 +21,6 @@ config.yaml
 
 # Streamlit secrets (local)
 .streamlit/secrets.toml
-.streamlit/
 
 # IDE
 .vscode/
