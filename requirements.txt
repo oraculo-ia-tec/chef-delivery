@@ -1,22 +1,2 @@
-# === Core Streamlit ===
 streamlit==1.40.2
-streamlit-authenticator==0.4.1
-streamlit-lottie==0.0.5
-streamlit-option-menu==0.4.0
-
-# === Data / Database ===
-pandas
-SQLAlchemy==2.0.36
-PyMySQL==1.1.1
-
-# === API / HTTP ===
-httpx
-requests
-pydantic
-
-# === AI / LLM ===
 groq
-
-# === Utilities ===
-bcrypt
-PyYAML
