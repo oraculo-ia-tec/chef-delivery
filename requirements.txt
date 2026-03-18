@@ -2,3 +2,4 @@ streamlit==1.40.2
 groq
 streamlit-authenticator
 streamlit-option-menu
+streamlit-lottie
