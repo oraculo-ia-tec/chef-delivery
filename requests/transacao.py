@@ -1,45 +1,5 @@
-from typing import Dict, List, Optional, Any
-from fastapi.responses import JSONResponse
-from fastapi import Response, Path, Query, Header, FastAPI, HTTPException, status, Depends
-from fastapi import HTTPException
-from pydantic import BaseModel
-import httpx
 import streamlit as st
-
-# Configuração da chave de acesso
-api_key = st.secrets.get("api_keys", {}).get("API_KEY_ASAAS", "")
-api_secret = st.secrets.get("api_keys", {}).get("API_SECRET_ASAAS", "")
-
-app = FastAPI(
-    title='FLASHAPI SISTEMA DE PAGAMENTOS',
-    version='0.0.1',
-    description='FlashApi Transações'
-)
-
-from pydantic import BaseModel
-from fastapi import FastAPI, status, Body, HTTPException
-import httpx
-
-app = FastAPI()
-api_key = "YOUR_API_KEY"
-
-
-class Transacao(BaseModel):
-    payment_id: str
-    recipient_id: str
-    recipient_type: str
-    amount: float
-    status: str
-
-
-def calculate_commission(amount: float, recipient_type: str) -> float:
-    if recipient_type == 'Parceiro':
-        return amount * 0.30  # 30% no ato da assinatura
-    elif recipient_type == 'Colaborador':
-        return amount * 0.20  # 20% no ato da assinatura
-    elif recipient_type == 'Consultor':
-        return amount * 0.10  # 10% no ato da assinatura
-    else:
+# ...existing code...
         raise ValueError("Tipo de receptor desconhecido")
 
 

@@ -1,52 +1,5 @@
-from typing import Dict, List, Optional, Any
-from fastapi.responses import JSONResponse
-from fastapi import Response, Path, Query, Header, FastAPI, HTTPException, status, Depends
-from fastapi import HTTPException
-from pydantic import BaseModel
-import httpx
 import streamlit as st
-from fastapi import Body
-
-
-# Configuração da chave de acesso (ASAAS desativado por enquanto)
-# ASAAS_API_KEY = st.secrets.get("api_keys", {}).get("API_KEY_ASAAS", "")
-
-app = FastAPI(
-    title='FLASHAPI SISTEMA DE PAGAMENTOS',
-    version='0.0.1',
-    description='FlashApi Splits'
-)
-
-
-# Modelo de Split de pagamento
-class SplitPagamento(BaseModel):
-    id: str
-    payment_id: str
-    recipient_id: str
-    amount: float
-    percentage: float
-    status: str
-
-
-# Função para calcular a comissão do page_split de pagamento
-def calculate_commission(amount: float, recipient_type: str, is_recurring: bool) -> float:
-    if recipient_type == 'Parceiro':
-        if is_recurring:
-            return amount * 0.10  # 10% de recorrência
-        else:
-            return amount * 0.30  # 30% no ato da assinatura
-    elif recipient_type == 'Colaborador':
-        if is_recurring:
-            return amount * 0.10  # 10% de recorrência
-        else:
-            return amount * 0.20  # 20% no ato da assinatura
-    elif recipient_type == 'Consultor':
-        if is_recurring:
-            return amount * 0.10  # 10% de recorrência
-        else:
-            return amount * 0.10  # 10% no ato da assinatura
-    else:
-        raise ValueError("Tipo de receptor desconhecido")
+# ...existing code...
 
 
 # Função para fazer requisições à API do Asaas para splits de pagamento

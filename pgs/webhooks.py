@@ -1,42 +1,5 @@
 import streamlit as st
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
-import asyncio
-import requests
-import pandas as pd
-from configuracao import BASE_URL
-
-
-# Inicialização do FastAPI
-app = FastAPI()
-
-
-# Modelo para Webhook
-class Webhook(BaseModel):
-    id: Optional[int]  # ID do webhook, gerado automaticamente
-    name: str          # Nome do webhook
-    url: str           # URL onde o webhook será enviado
-    event: str         # Evento que irá acionar o webhook
-    enabled: bool      # Status do webhook (ativo ou inativo)
-
-# Lista para armazenar os webhooks
-webhooks_db = []
-next_id = 1  # Simulação de ID incremental
-
-
-@app.post("/webhooks/", response_model=Webhook)
-async def create_webhook(webhook: Webhook):
-    global next_id
-    webhook.id = next_id
-    webhooks_db.append(webhook)
-    next_id += 1
-    return webhook
-
-
-@app.get("/webhooks/", response_model=List[Webhook])
-async def list_webhooks():
-    return webhooks_db
+# ...existing code...
 
 
 @app.get("/webhooks/{webhook_id}", response_model=Webhook)

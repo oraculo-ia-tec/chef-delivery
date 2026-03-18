@@ -1,43 +1,5 @@
 import streamlit as st
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from httpx import AsyncClient
-import asyncio
-import pandas as pd
-from configuracao import BASE_URL  # Importando as configurações necessárias
-from typing import Optional
-from datetime import datetime
-
-
-app = FastAPI()
-
-
-# Modelo de Cliente
-class Cliente(BaseModel):
-    nome: str
-    email: str
-    cpf_cnpj: str
-    whatsapp: str
-    endereco: str
-    cep: str  # O CEP deve ser uma string para incluir zeros à esquerda
-    bairro: str
-    cidade: str
-
-
-async def create_customer(customer: Cliente):
-    async with AsyncClient() as client:
-        response = await client.post(
-            f'{BASE_URL}/customers',
-            json={
-                "name": customer.nome,
-                "email": customer.email,
-                "cpf": customer.cpf_cnpj,
-                "phone": customer.whatsapp,
-                "address": customer.endereco,
-                "postalCode": customer.cep,
-                "district": customer.bairro,
-                "city": customer.cidade
-            },
+# ...existing code...
             headers={'access_token': ''}
         )
         response.raise_for_status()
