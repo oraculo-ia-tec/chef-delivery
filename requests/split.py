@@ -83,7 +83,7 @@ async def get_payment_splits(payment_id: str = Path(default=None, title='ID do p
 
 @app.get('/payments/{payment_id}/splits/{split_id}')
 async def get_payment_split(payment_id: str = Path(default=None, title='ID do pagamento', description='ID do pagamento'),
-                             split_id: str = Path(default=None, title='ID do page_split de pagamento', description='ID do page_split de pagamento')):
+                            split_id: str = Path(default=None, title='ID do page_split de pagamento', description='ID do page_split de pagamento')):
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f'https://www.asaas.com/api/v3/payments/{payment_id}/splits/{split_id}',
@@ -112,7 +112,8 @@ async def post_payment_split(payment_id: str = Path(default=None, title='ID do p
 
 @app.put('/payments/{payment_id}/splits/{split_id}')
 async def put_payment_split(payment_id: str = Path(default=None, title='ID do pagamento', description='ID do pagamento'),
-                            split_id: str = Path(default=None, title='ID do page_split de pagamento', description='ID do page_split de pagamento'),
+                            split_id: str = Path(
+                                default=None, title='ID do page_split de pagamento', description='ID do page_split de pagamento'),
                             split: SplitPagamento = Body(...)):
     async with httpx.AsyncClient() as client:
         response = await client.put(
@@ -129,7 +130,7 @@ async def put_payment_split(payment_id: str = Path(default=None, title='ID do pa
 
 @app.delete('/payments/{payment_id}/splits/{split_id}')
 async def delete_payment_split(payment_id: str = Path(default=None, title='ID do pagamento', description='ID do pagamento'),
-                                split_id: str = Path(default=None, title='ID do page_split de pagamento', description='ID do page_split de pagamento')):
+                               split_id: str = Path(default=None, title='ID do page_split de pagamento', description='ID do page_split de pagamento')):
     async with httpx.AsyncClient() as client:
         response = await client.delete(
             f'https://www.asaas.com/api/v3/payments/{payment_id}/splits/{split_id}',

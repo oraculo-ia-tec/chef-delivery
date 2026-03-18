@@ -30,9 +30,12 @@ def inicializar_session_state():
                 st.session_state[campo] = ""  # Inicializa como string vazia
 
 # Função para atualizar o primeiro nome no session_state
+
+
 def atualizar_primeiro_nome():
     if st.session_state.name:
         st.session_state.primeiro_nome = st.session_state.name.split(" ")[0]
+
 
 # Inicializa o session_state no início do script
 inicializar_session_state()
@@ -45,7 +48,6 @@ async def showPedido():
     # Atualiza o primeiro nome no session_state, se necessário
     if st.session_state.name and not st.session_state.primeiro_nome:
         atualizar_primeiro_nome()
-
 
     # Extrai o primeiro nome do session_state (ou usa "Cliente" como padrão)
     primeiro_nome = st.session_state.primeiro_nome if st.session_state.primeiro_nome else "Cliente"
@@ -354,7 +356,8 @@ async def showPedido():
     
     '''
 
-    icons = {"assistant": "./src/img/perfil-chat1.png", "user": "./src/img/cliente.png"}
+    icons = {"assistant": "./src/img/perfil-chat1.png",
+             "user": "./src/img/cliente.png"}
 
     # Store LLM-generated responses
     if "messages" not in st.session_state.keys():
@@ -374,12 +377,14 @@ async def showPedido():
 
     st.sidebar.button('LIMPAR CONVERSA', on_click=clear_chat_history)
 
-    st.sidebar.markdown("Desenvolvido pela [Oráculos IA](https://www.instagram.com/oraculosia/)")
+    st.sidebar.markdown(
+        "Desenvolvido pela [Oráculos IA](https://www.instagram.com/oraculosia/)")
 
     def generate_groq_response():
         messages = [{"role": "system", "content": system_prompt}]
         for dict_message in st.session_state.messages:
-            messages.append({"role": dict_message["role"], "content": dict_message["content"]})
+            messages.append(
+                {"role": dict_message["role"], "content": dict_message["content"]})
 
         stream = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -407,6 +412,3 @@ async def showPedido():
             full_response = st.write_stream(response)
         message = {"role": "assistant", "content": full_response}
         st.session_state.messages.append(message)
-
-
-

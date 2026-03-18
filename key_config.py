@@ -5,7 +5,8 @@ _urls = st.secrets.get("urls", {})
 
 # URL base da API do Stripe
 URL_BASE_STRIPE = _urls.get("URL_BASE_STRIPE", "https://api.stripe.com/v1")
-URL_BASE_ASAAS = _urls.get("BASE_URL_ASAAS", "https://api-sandbox.asaas.com/v3")
+URL_BASE_ASAAS = _urls.get(
+    "BASE_URL_ASAAS", "https://api-sandbox.asaas.com/v3")
 
 # Chave da API do Groq
 GROQ_API_KEY = _api.get("GROQ_API_KEY", "")

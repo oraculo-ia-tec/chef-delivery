@@ -24,7 +24,8 @@ def contact_form():
 
     if submit_button:
         if not WEBHOOK_URL:
-            st.error("Email service is not set up. Please try again later.", icon="📧")
+            st.error(
+                "Email service is not set up. Please try again later.", icon="📧")
             st.stop()
 
         if not name:
@@ -50,7 +51,8 @@ def contact_form():
         if response.status_code == 200:
             st.success("A sua mensagem foi enviada com sucesso! 🎉", icon="🚀")
         else:
-            st.error("Desculpe-me, parece que houve um problema no envio da sua mensagem", icon="😨")
+            st.error(
+                "Desculpe-me, parece que houve um problema no envio da sua mensagem", icon="😨")
 
 
 def cadastro_pedido():
@@ -63,7 +65,8 @@ def cadastro_pedido():
 
     if submit_button:
         if not WEBHOOK_URL:
-            st.error("Email service is not set up. Please try again later.", icon="📧")
+            st.error(
+                "Email service is not set up. Please try again later.", icon="📧")
             st.stop()
 
         if not name:
@@ -89,9 +92,9 @@ def cadastro_pedido():
         if response.status_code == 200:
             st.success("A sua mensagem foi enviada com sucesso! 🎉", icon="🚀")
         else:
-            st.error("Desculpe-me, parece que houve um problema no envio da sua mensagem", icon="😨")
+            st.error(
+                "Desculpe-me, parece que houve um problema no envio da sua mensagem", icon="😨")
 
 
 # Variável para armazenar o estado do pedido
 pedido_finalizado = False
-
