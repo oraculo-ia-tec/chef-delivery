@@ -7,13 +7,7 @@ import base64
 from streamlit_option_menu import option_menu
 import time
 
-from pgs.home import showHome
-from pgs.cliente_criar import showCliente
-from pgs.financeiro import showFinanceiro
-from pgs.pedido import showPedido
-from pgs.link_pagamento import showLinks
-from pgs.subcontas_criar import showParceiro
-from pgs.webhooks import shoWebhooks
+
 
 # --- LOAD CONFIGURATION VIA SECRETS ---
 users_list = st.secrets["credentials"]["users"]
@@ -88,35 +82,6 @@ if 'authentication_status' in st.session_state and st.session_state['authenticat
     st.sidebar.markdown("---")
 
     # Definir permissões de acesso
-    permissoes = {
-        "admin": ["Fazer Pedido", "Criar Cliente", "Dashboard", "Financeiro", "Link de Pagamento", "Parceiro",
-                  "Webhook"],
-        "parceiro": ["Fazer Pedido", "Criar Cliente"],
-        "cliente": ["Fazer Pedido"]
-    }
-
-    # Mapear as funções das páginas
-    pagina_func_map = {
-        "Fazer Pedido": showPedido,
-        "Criar Cliente": showCliente,
-        "Dashboard": showHome,
-        "Financeiro": showFinanceiro,
-        "Link de Pagamento": showLinks,
-        "Parceiro": showParceiro,
-        "Webhook": shoWebhooks
-    }
-
-    # Validar o papel do usuário
-    if user_role in permissoes:
-        multi_page = MultiPage()
-
-        # Adicionar páginas permitidas para o papel do usuário
-        for titulo_pagina in permissoes[user_role]:
-            multi_page.add_page(titulo_pagina, pagina_func_map[titulo_pagina])
-
-        # Executar a aplicação
-        multi_page.run()
-    else:
-        st.error("Você não tem permissão para acessar esta aplicação.")
+    st.warning("Nenhuma página disponível. As páginas do sistema foram removidas.")
 else:
     st.info("Insira seu usuário e senha para acessar o Chef Delivery.")
