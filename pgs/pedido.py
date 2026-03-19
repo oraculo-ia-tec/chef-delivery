@@ -1,8 +1,4 @@
 import streamlit as st
-import openai
-import os
-import time
-import pandas as pd
 
 # Função para exibir a página de pedidos com chatbot
 def showPedido():
