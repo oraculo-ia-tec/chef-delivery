@@ -74,6 +74,10 @@ if 'authentication_status' in st.session_state and st.session_state['authenticat
     user_name = user_info['name']
     user_role = user_info.get('role', 'cliente')
 
+    # Atualiza o session_state.name e session_state.primeiro_nome para o usuário logado
+    st.session_state.name = user_name
+    st.session_state.primeiro_nome = user_name.split(" ")[0] if user_name else ""
+
     # Mensagem de boas-vindas
     st.sidebar.markdown(
         f"<h1 style='color: #FFFFFF; font-size: 24px;'>🎉 Seja bem-vindo(a), <span style='font-weight: bold;'>{user_name}</span>!!! 🎉</h1>",
