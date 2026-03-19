@@ -82,6 +82,21 @@ if 'authentication_status' in st.session_state and st.session_state['authenticat
     st.sidebar.markdown("---")
 
     # Definir permissões de acesso
-    st.warning("Nenhuma página disponível. As páginas do sistema foram removidas.")
+    allowed_pages = user_info.get('allowed_pages', [])
+    mp = MultiPage()
+    # Adiciona páginas conforme permitido
+    if "home" in allowed_pages:
+        from pgs.home import showHome
+        mp.add_page("Home", showHome)
+    if "pedido" in allowed_pages:
+        from pgs.pedido import showPedido
+        mp.add_page("Pedido", showPedido)
+    if "dashboard" in allowed_pages:
+        from pgs.dashboard import showDashboard
+        mp.add_page("Dashboard", showDashboard)
+    if mp.pages:
+        mp.run()
+    else:
+        st.warning("Nenhuma página disponível para seu perfil.")
 else:
     st.info("Insira seu usuário e senha para acessar o Chef Delivery.")
