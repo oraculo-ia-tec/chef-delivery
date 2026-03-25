@@ -1,12 +1,18 @@
-import asyncio
 
-import streamlit as st
-import streamlit_authenticator as stauth
-from streamlit_authenticator import Authenticate
-import base64
-from streamlit_option_menu import option_menu
 import time
+from streamlit_option_menu import option_menu
+import base64
+from streamlit_authenticator import Authenticate
+import streamlit_authenticator as stauth
+import asyncio
+import streamlit as st
 
+st.set_page_config(
+    page_title="Chef Delivery",
+    page_icon="🍔",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 
 # --- LOAD CONFIGURATION VIA SECRETS ---
@@ -47,7 +53,8 @@ class MultiPage:
             pag = option_menu(
                 menu_title="MENU",
                 options=[page["title"] for page in self.pages],
-                icons=['house-fill', 'cart-fill', 'person-fill', 'cash-stack', 'link', 'people-fill', 'code-slash'],
+                icons=['house-fill', 'cart-fill', 'person-fill',
+                       'cash-stack', 'link', 'people-fill', 'code-slash'],
                 menu_icon='list',
                 default_index=0,
                 styles={
@@ -76,7 +83,8 @@ if 'authentication_status' in st.session_state and st.session_state['authenticat
 
     # Atualiza o session_state.name e session_state.primeiro_nome para o usuário logado
     st.session_state.name = user_name
-    st.session_state.primeiro_nome = user_name.split(" ")[0] if user_name else ""
+    st.session_state.primeiro_nome = user_name.split(
+        " ")[0] if user_name else ""
 
     # Mensagem de boas-vindas
     st.sidebar.markdown(
