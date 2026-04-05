@@ -824,11 +824,6 @@ class MultiPage:
 inject_global_style()
 
 with st.sidebar:
-    st.markdown(
-        '<div class="sidebar-auth-title">🍔 Chef Delivery</div>',
-        unsafe_allow_html=True,
-    )
-
     # ── Inicializar estado do formulário ──
     if "auth_mode" not in st.session_state:
         st.session_state.auth_mode = "login"
