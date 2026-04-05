@@ -1,4 +1,9 @@
+import os
+import asyncio
 import streamlit as st
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def showConfiguracao():
@@ -22,7 +27,7 @@ def showConfiguracao():
     # --- Seção: Configuração de Pagamento ---
     st.subheader("💳 Configuração de Pagamento (ASAAS)")
 
-    asaas_key = st.secrets.get("api_keys", {}).get("ASAAS_API_KEY", "")
+    asaas_key = os.getenv("ASAAS_API_KEY", "")
     if asaas_key:
         st.success("API Key ASAAS configurada", icon="✅")
         ambiente = st.radio("Ambiente", ["Sandbox (testes)", "Produção"], index=0, horizontal=True)
@@ -55,8 +60,8 @@ def showConfiguracao():
     # --- Seção: Webhooks ---
     st.subheader("🔗 Webhooks e Integrações")
 
-    webhook_url = st.secrets.get("api_keys", {}).get("WEBHOOK_URL", "")
-    webhook_cadastro = st.secrets.get("api_keys", {}).get("WEBHOOK_CADASTRO", "")
+    webhook_url = os.getenv("WEBHOOK_URL", "")
+    webhook_cadastro = os.getenv("WEBHOOK_CADASTRO", "")
 
     with st.expander("Ver configuração de webhooks"):
         st.text_input("Webhook de Pedidos", value=webhook_url, disabled=True)
@@ -68,18 +73,30 @@ def showConfiguracao():
     # --- Seção: Usuários ---
     st.subheader("👤 Usuários do Sistema")
 
-    users_list = st.secrets.get("credentials", {}).get("users", [])
-    if users_list:
-        for user in users_list:
-            role_icon = {"admin": "🔑", "parceiro": "🤝", "cliente": "👤"}.get(user.get("role", ""), "❔")
+    from database import create_session as _db_session
+    from database.repositories import usuario_repo
+
+    async def _load_users():
+        session = await _db_session()
+        try:
+            return await usuario_repo.list_usuarios(session)
+        finally:
+            await session.close()
+
+    db_users = asyncio.run(_load_users())
+    if db_users:
+        for user in db_users:
+            role_icon = {"admin": "🔑", "parceiro": "🤝", "cliente": "👤", "entregador": "🏍️"}.get(user.role, "❔")
+            verificado = "✅" if user.email_verificado else "⏳"
             with st.container():
-                c1, c2, c3 = st.columns([3, 2, 1])
-                c1.write(f"**{user['name']}** ({user['username']})")
-                c2.write(user.get("email", ""))
-                c3.write(f"{role_icon} {user.get('role', 'N/A')}")
+                c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
+                c1.write(f"**{user.nome}**")
+                c2.write(user.email)
+                c3.write(f"{role_icon} {user.role}")
+                c4.write(verificado)
             st.markdown("<hr style='margin:0.2rem 0; border-color: rgba(120,255,182,0.08);'>", unsafe_allow_html=True)
     else:
-        st.warning("Nenhum usuário configurado.")
+        st.warning("Nenhum usuário cadastrado.")
 
     st.markdown("---")
-    st.caption("💡 As configurações sensíveis (API keys, webhooks) são gerenciadas via secrets.toml por segurança.")
+    st.caption("💡 As configurações sensíveis (API keys, webhooks) são gerenciadas via variáveis de ambiente por segurança.")

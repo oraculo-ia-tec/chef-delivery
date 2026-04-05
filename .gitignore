@@ -17,7 +17,6 @@ __pycache__/
 
 # Environment variables (senhas e chaves)
 .env
-config.yaml
 
 # Streamlit secrets (local)
 .streamlit/secrets.toml

@@ -1,0 +1,113 @@
+import time
+from streamlit_option_menu import option_menu
+import base64
+from streamlit_authenticator import Authenticate
+import streamlit_authenticator as stauth
+import asyncio
+import streamlit as st
+
+st.set_page_config(
+    page_title="Chef Delivery",
+    page_icon="🍔",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+
+# --- LOAD CONFIGURATION VIA SECRETS ---
+users_list = st.secrets["credentials"]["users"]
+
+credentials = {
+    'usernames': {user['username']: {
+        'name': user['name'],
+        'password': user['password'],
+        'email': user['email'],
+        'role': user.get('role', 'cliente')
+    } for user in users_list}
+}
+
+authenticator = Authenticate(
+    credentials=credentials,
+    cookie_name=st.secrets["cookie"]["name"],
+    key=st.secrets["cookie"]["key"],
+    cookie_expiry_days=st.secrets["cookie"]["expiry_days"]
+)
+
+# --- PAGE SETUP ---
+authenticator.login(key='login_form')
+
+
+class MultiPage:
+    def __init__(self):
+        self.pages = []
+
+    def add_page(self, title, func):
+        self.pages.append({
+            "title": title,
+            "function": func
+        })
+
+    def run(self):
+        with st.sidebar:
+            pag = option_menu(
+                menu_title="MENU",
+                options=[page["title"] for page in self.pages],
+                icons=['house-fill', 'cart-fill', 'person-fill',
+                       'cash-stack', 'link', 'people-fill', 'code-slash'],
+                menu_icon='list',
+                default_index=0,
+                styles={
+                    "container": {"padding": "5!important", "background-color": 'black'},
+                    "icon": {"color": "white", "font-size": "15px"},
+                    "nav-link": {"color": "white", "font-size": "20px", "text-align": "left", "margin": "0px",
+                                 "--hover-color": "blue"},
+                    "nav-link-selected": {"background-color": "#02ab21"},
+                }
+            )
+
+        for page in self.pages:
+            if page["title"] == pag:
+                asyncio.run(page["function"]())
+
+
+# Verifica se o usuário está autenticado
+if 'authentication_status' in st.session_state and st.session_state['authentication_status']:
+    authenticator.logout('SAIR', 'sidebar')
+
+    # Obtenha o nome e o papel do usuário logado
+    user_info = next(
+        (user for user in users_list if user['username'] == st.session_state['username']), None)
+    user_name = user_info['name']
+    user_role = user_info.get('role', 'cliente')
+
+    # Atualiza o session_state.name e session_state.primeiro_nome para o usuário logado
+    st.session_state.name = user_name
+    st.session_state.primeiro_nome = user_name.split(
+        " ")[0] if user_name else ""
+
+    # Mensagem de boas-vindas
+    st.sidebar.markdown(
+        f"<h1 style='color: #FFFFFF; font-size: 24px;'>🎉 Seja bem-vindo(a), <span style='font-weight: bold;'>{user_name}</span>!!! 🎉</h1>",
+        unsafe_allow_html=True
+    )
+    st.sidebar.markdown("---")
+
+    # Definir permissões de acesso
+    allowed_pages = user_info.get('allowed_pages', [])
+    mp = MultiPage()
+    # Adiciona páginas conforme permitido
+    if "home" in allowed_pages:
+        from pgs.home import showHome
+        mp.add_page("Home", showHome)
+    if "pedido" in allowed_pages:
+        from pgs.pedido import showPedido
+        mp.add_page("Pedido", showPedido)
+    if "dashboard" in allowed_pages:
+        from pgs.dashboard import showDashboard
+        mp.add_page("Dashboard", showDashboard)
+    if mp.pages:
+        mp.run()
+    else:
+        st.warning("Nenhuma página disponível para seu perfil.")
+else:
+    st.info("Insira seu usuário e senha para acessar o Chef Delivery.")

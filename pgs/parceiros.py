@@ -14,7 +14,7 @@ def showParceiros():
 
     st.markdown("---")
 
-    # --- Lista de parceiros (dados de exemplo baseados no config.yaml) ---
+    # --- Lista de parceiros (dados de exemplo) ---
     parceiros_exemplo = [
         {"nome": "Regiane dos Santos", "email": "regiane@gmail.com", "whatsapp": "(31) 99999-0001", "vendas": 42, "status": "Ativo"},
         {"nome": "Alan Teste", "email": "alanteste@gmail.com", "whatsapp": "(31) 99999-0005", "vendas": 18, "status": "Ativo"},

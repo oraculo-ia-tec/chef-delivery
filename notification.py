@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List
 
-import streamlit as st
+from dotenv import load_dotenv
 
 try:
     from google.oauth2.credentials import Credentials
@@ -19,23 +19,17 @@ except ModuleNotFoundError as e:
         "google-auth-oauthlib, google-auth-httplib2"
     ) from e
 
+load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 
 class Notificador:
     def __init__(self):
-        email_secrets = st.secrets["email"] if "email" in st.secrets else {}
-
-        self.google_client_id = email_secrets.get(
-            "GOOGLE_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
-        self.google_client_secret = email_secrets.get(
-            "GOOGLE_CLIENT_SECRET") or os.getenv("GOOGLE_CLIENT_SECRET")
-        self.google_refresh_token = email_secrets.get(
-            "GMAIL_REFRESH_TOKEN") or os.getenv("GMAIL_REFRESH_TOKEN")
-        self.google_oauth_scopes_raw = email_secrets.get(
-            "GOOGLE_OAUTH_SCOPES") or os.getenv("GOOGLE_OAUTH_SCOPES", "")
-        self.login = email_secrets.get(
-            "EMAIL_REMETENTE") or os.getenv("EMAIL_REMETENTE")
+        self.google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+        self.google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+        self.google_refresh_token = os.getenv("GMAIL_REFRESH_TOKEN")
+        self.google_oauth_scopes_raw = os.getenv("GOOGLE_OAUTH_SCOPES", "")
+        self.login = os.getenv("EMAIL_REMETENTE")
 
         self.google_scopes = self._load_scopes()
 

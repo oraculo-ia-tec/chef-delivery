@@ -1,3 +1,4 @@
+import os
 import re
 import streamlit as st
 import requests  # pip install requests
@@ -12,7 +13,7 @@ from api_asaas import streamlit_payment_flow_example
 from configuracao import ASAAS_API_KEY, ASAAS_ENVIRONMENT
 
 
-WEBHOOK_URL = st.secrets.get("api_keys", {}).get("WEBHOOK_URL", "")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 
 
 def is_valid_email(email):

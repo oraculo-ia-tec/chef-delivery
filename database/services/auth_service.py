@@ -1,8 +1,7 @@
 """
 Serviço de autenticação e autorização de usuários do Chef Delivery.
 
-Utiliza bcrypt (já disponível via streamlit-authenticator) para
-hash e verificação de senhas.
+Utiliza bcrypt para hash e verificação de senhas.
 """
 
 from __future__ import annotations

@@ -1,35 +1,14 @@
-import os
 import streamlit as st
+import os
 import base64
-from pathlib import Path
+from forms.contact import cadastro_pedido
+import asyncio
 
-from dotenv import load_dotenv
 from groq import Groq
 
-load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-
-
-@st.cache_resource(show_spinner=False)
-def get_groq_client():
-    return Groq(api_key=GROQ_API_KEY)
-
-
-@st.cache_data(show_spinner=False)
-def _build_image_data_uri(relative_path: str) -> str:
-    image_path = Path(__file__).resolve().parent.parent / relative_path
-    if not image_path.exists():
-        return ""
-    image_bytes = image_path.read_bytes()
-    encoded = base64.b64encode(image_bytes).decode("ascii")
-    suffix = image_path.suffix.lower()
-    mime_type = {
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-    }.get(suffix, "application/octet-stream")
-    return f"data:{mime_type};base64,{encoded}"
+GROQ_API_KEY = st.secrets["api_keys"]["GROQ_API_KEY"]
+client = Groq(api_key=GROQ_API_KEY)
 
 
 # Função para inicializar o session_state
@@ -41,16 +20,12 @@ def inicializar_session_state():
         "endereco",  # Endereço do cliente
         "whatsapp",  # WhatsApp do cliente
         "pedido",  # Itens do pedido
-        "observacao",  # Observações do cliente
-        "total_value",  # Total do pedido (float)
-        "pedido_texto",  # Descrição textual do pedido
+        "observacao"  # Observações do cliente
     ]
     for campo in campos:
         if campo not in st.session_state:
             if campo == "pedido":
                 st.session_state[campo] = []  # Inicializa como lista vazia
-            elif campo == "total_value":
-                st.session_state[campo] = 0.0  # Inicializa como zero
             else:
                 st.session_state[campo] = ""  # Inicializa como string vazia
 
@@ -62,9 +37,23 @@ def atualizar_primeiro_nome():
         st.session_state.primeiro_nome = st.session_state.name.split(" ")[0]
 
 
-@st.cache_data(show_spinner=False)
-def _build_system_prompt(primeiro_nome: str) -> str:
-    return f'''
+# Inicializa o session_state no início do script
+inicializar_session_state()
+
+
+async def showPedido():
+    # 🔧 Garante inicialização dos campos
+    inicializar_session_state()
+
+    # Atualiza o primeiro nome no session_state, se necessário
+    if st.session_state.name and not st.session_state.primeiro_nome:
+        atualizar_primeiro_nome()
+
+    # Extrai o primeiro nome do session_state (ou usa "Cliente" como padrão)
+    primeiro_nome = st.session_state.primeiro_nome if st.session_state.primeiro_nome else "Cliente"
+
+    # Cria o system_prompt usando o primeiro nome
+    system_prompt = f'''
     Você é o Chef Delivery especialista em vendas online e conhece todos os tipos de carne e cortes, você também é formado como chef de cozinha e sabe instruir com excelência como preparar pratos e temperos. Faça a saudação ao cliente antes de iniciar o atendimento e se apresente.
     Faça a saudação ao cliente antes de iniciar o atendimento e se apresente. Use o nome "{primeiro_nome}" para personalizar as mensagens.
     Sua respostas serão no máximo 300 tokens completando a resposta sem ter cortes. Seja curto e claro nas respostas sem prolongar. Somente na apresentação das opções de tipos de carne e tipos de corte que você poderá ultrapassar os 300 tokens.
@@ -96,13 +85,13 @@ def _build_system_prompt(primeiro_nome: str) -> str:
         16. Formate em uma planilha os dados dele, os produtos do pedido e o total do pedido a ser pago.
         17. Assim que você apresentar a planilha com todos os dados do tópico anterior, pergunte se ele tem alguma observação a fazer.
         18. Se ele responder que sim, pergunte qual seria a observação e anote no campo "OBSERVAÇÃO" da planilha.
-        19. Se ele disser que não tem nenhuma observação a fazer, cite o nome dele e informe que o link de pagamento PIX será gerado automaticamente e que assim que o sistema confirmar o pagamento será preparado o pedido e entregue.
+        19. Se ele disser que não tem nenhuma observação a fazer, cite o nome dele e informe que o pagamento é feito pela chave do PIX: 31983352900 e que assim que o sistema confirmar o pagamento será preparado o pedido e entregue.
     
     A FAC será uma referencia para suas respostas:
     
         - Sim. Fazemos entrega num raio de 5km do nosso açougue.
         - A taxa de entrega é de R$6,00 dentro do raio de 5km.
-        - Recebemos pagamento via PIX + a taxa de entrega R$6,00. O link de pagamento PIX será gerado automaticamente após finalizar o pedido.
+        - Recebemos pagamento via PIX + a taxa de entrega R$6,00 através da chave: 31998417976.
         - Clique no link para ver a nossa localização exata: [localização](https://maps.app.goo.gl/YLJxnEchmZpPv4qb7).
         - Temos: BOI, PORCO, FRANGO, LINGUIÇA, PEIXE, KITS.
         - Para a carne de boi temos:
@@ -367,63 +356,6 @@ def _build_system_prompt(primeiro_nome: str) -> str:
     
     '''
 
-
-@st.cache_data(show_spinner=False)
-def _build_welcome_css() -> str:
-    return """
-        <style>
-        .chef-welcome-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 1.2rem auto 1.6rem auto;
-            animation: fadeInChat 0.7s ease-out;
-        }
-        .chef-welcome-wrap img {
-            width: clamp(120px, 14vw, 180px);
-            border-radius: 50%;
-            border: 3px solid rgba(120,255,182,0.35);
-            box-shadow: 0 0 28px rgba(0,255,170,0.25);
-            animation: floatyChat 3.6s ease-in-out infinite;
-        }
-        .chef-welcome-msg {
-            margin-top: 1rem;
-            text-align: center;
-            font-size: 1.12rem;
-            color: #e8f4ee;
-            line-height: 1.6;
-            max-width: 600px;
-            padding: 0.8rem 1.2rem;
-            border-radius: 16px;
-            background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
-            border: 1px solid rgba(120,255,182,0.15);
-            box-shadow: 0 0 18px rgba(0,255,170,0.06);
-        }
-        @keyframes fadeInChat {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes floatyChat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-        }
-        </style>
-        """
-
-
-async def showPedido():
-    # 🔧 Garante inicialização dos campos
-    inicializar_session_state()
-
-    # Atualiza o primeiro nome no session_state, se necessário
-    if st.session_state.name and not st.session_state.primeiro_nome:
-        atualizar_primeiro_nome()
-
-    # Extrai o primeiro nome do session_state (ou usa "Cliente" como padrão)
-    primeiro_nome = st.session_state.primeiro_nome if st.session_state.primeiro_nome else "Cliente"
-
-    system_prompt = _build_system_prompt(primeiro_nome)
-
     icons = {"assistant": "./src/img/perfil-chat1.png",
              "user": "./src/img/cliente.png"}
 
@@ -435,23 +367,8 @@ async def showPedido():
             {"role": "assistant", "content": mensagem_inicial}
         ]
 
-    # --- Imagem centralizada + mensagem de boas-vindas ---
-    chef_img_src = _build_image_data_uri("src/img/perfil.png")
-    primeira_msg = st.session_state.messages[0]["content"]
-
-    st.markdown(_build_welcome_css(), unsafe_allow_html=True)
-    st.markdown(
-        f"""
-        <div class="chef-welcome-wrap">
-            <img src="{chef_img_src}" alt="Chef Delivery">
-            <div class="chef-welcome-msg">{primeira_msg}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Display remaining chat messages (skip the first welcome message)
-    for message in st.session_state.messages[1:]:
+    # Display or clear chat messages
+    for message in st.session_state.messages:
         with st.chat_message(message["role"], avatar=icons[message["role"]]):
             st.write(message["content"])
 
@@ -468,7 +385,6 @@ async def showPedido():
         "Desenvolvido pela [Oráculos IA](https://www.instagram.com/oraculosia/)")
 
     def generate_groq_response():
-        client = get_groq_client()
         messages = [{"role": "system", "content": system_prompt}]
         for dict_message in st.session_state.messages:
             messages.append(

@@ -2,11 +2,14 @@ import asyncio
 import base64
 import functools
 import inspect
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 import streamlit as st
 from streamlit_option_menu import option_menu
-from streamlit_authenticator import Authenticate
 
+load_dotenv()
 
 st.set_page_config(
     page_title="Chef Delivery",
@@ -15,29 +18,54 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-
-users_list = st.secrets["credentials"]["users"]
-credentials = {
-    "usernames": {
-        user["username"]: {
-            "name": user["name"],
-            "password": user["password"],
-            "email": user["email"],
-            "role": user.get("role", "cliente"),
-        }
-        for user in users_list
-    }
-}
-
-authenticator = Authenticate(
-    credentials=credentials,
-    cookie_name=st.secrets["cookie"]["name"],
-    key=st.secrets["cookie"]["key"],
-    cookie_expiry_days=st.secrets["cookie"]["expiry_days"],
-)
+# ── Inicializa session_state de autenticação ──
+if "authentication_status" not in st.session_state:
+    st.session_state.authentication_status = False
+if "username" not in st.session_state:
+    st.session_state.username = None
+if "user_role" not in st.session_state:
+    st.session_state.user_role = None
 
 
-@st.cache_data(show_spinner=False)
+def _do_login(email: str, password: str) -> bool:
+    """Autentica contra o banco de dados e atualiza session_state."""
+    import asyncio as _aio
+    from database import create_session as _db_session
+    from database.services.auth_service import authenticate_usuario
+
+    async def _auth():
+        session = await _db_session()
+        try:
+            usuario = await authenticate_usuario(session, email, password)
+            return usuario
+        finally:
+            await session.close()
+
+    usuario = _aio.run(_auth())
+    if usuario is None:
+        return False
+    if not usuario.email_verificado:
+        st.error("📧 E-mail ainda não verificado. Verifique sua caixa de entrada.")
+        return False
+    st.session_state.authentication_status = True
+    st.session_state.username = usuario.email
+    st.session_state.name = usuario.nome
+    st.session_state.primeiro_nome = usuario.nome.split(" ")[0] if usuario.nome else ""
+    st.session_state.user_role = usuario.role
+    st.session_state.user_id = usuario.id
+    return True
+
+
+def _do_logout():
+    """Limpa session_state de autenticação."""
+    st.session_state.authentication_status = False
+    st.session_state.username = None
+    st.session_state.name = ""
+    st.session_state.primeiro_nome = ""
+    st.session_state.user_role = None
+    st.session_state.user_id = None
+
+
 @st.cache_data(show_spinner=False)
 def build_local_image_data_uri(relative_path: str) -> str:
     image_path = Path(__file__).resolve().parent / relative_path
@@ -820,7 +848,21 @@ with st.sidebar:
             '</div>',
             unsafe_allow_html=True,
         )
-        authenticator.login(location="sidebar", key="login_form")
+        with st.form("login_form"):
+            login_email = st.text_input("E-mail")
+            login_senha = st.text_input("Senha", type="password")
+            login_submit = st.form_submit_button(
+                "🔑 Entrar", use_container_width=True,
+            )
+            if login_submit:
+                if not login_email or not login_senha:
+                    st.error("Preencha e-mail e senha.")
+                else:
+                    if _do_login(login_email, login_senha):
+                        st.rerun()
+                    else:
+                        if st.session_state.authentication_status is False:
+                            st.error("❌ E-mail ou senha incorretos.")
         st.markdown(
             "<div class='login-note'>Faça login para acessar pedidos, dashboard e recursos inteligentes do Chef Delivery.</div>",
             unsafe_allow_html=True,
@@ -1027,17 +1069,13 @@ with st.sidebar:
 
 
 if st.session_state.get("authentication_status"):
-    authenticator.logout("SAIR", "sidebar")
+    with st.sidebar:
+        if st.button("🚪 SAIR", use_container_width=True, key="btn_logout"):
+            _do_logout()
+            st.rerun()
 
-    user_info = next(
-        (user for user in users_list if user["username"]
-         == st.session_state["username"]),
-        None,
-    )
-    user_name = user_info["name"]
-    st.session_state.name = user_name
-    st.session_state.primeiro_nome = user_name.split(
-        " ")[0] if user_name else ""
+    user_name = st.session_state.get("name", "")
+    user_role = st.session_state.get("user_role", "cliente")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown(
@@ -1045,18 +1083,16 @@ if st.session_state.get("authentication_status"):
         unsafe_allow_html=True,
     )
 
-    allowed_pages = user_info.get("allowed_pages", [])
     mp = MultiPage()
 
     from pgs.pedido import showPedido
     mp.add_page("Chef Delivery", showPedido, "cart-fill")
-    if "dashboard" in allowed_pages:
+    if user_role == "admin":
         from pgs.dashboard import showDashboard
         mp.add_page("Dashboard", showDashboard, "bar-chart-fill")
-    if user_info.get("role") in {"admin", "parceiro"} or "teste_api" in allowed_pages:
+    if user_role in {"admin", "parceiro"}:
         from pgs.teste_api import showTesteApi
         mp.add_page("Teste da API", showTesteApi, "bug-fill")
-    if user_info.get("role") in {"admin", "parceiro"}:
         from pgs.clientes import showClientes
         mp.add_page("Clientes", showClientes, "people-fill")
         from pgs.pagamentos import showPagamentos
@@ -1067,7 +1103,7 @@ if st.session_state.get("authentication_status"):
         mp.add_page("Preparação", showPreparacao, "fire")
         from pgs.entregador import showEntregador
         mp.add_page("Entregador", showEntregador, "bicycle")
-    if user_info.get("role") == "admin":
+    if user_role == "admin":
         from pgs.parceiros import showParceiros
         mp.add_page("Parceiros", showParceiros, "handshake")
         from pgs.configuracao_page import showConfiguracao
