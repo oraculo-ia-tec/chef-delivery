@@ -5,6 +5,16 @@ import inspect
 import os
 from pathlib import Path
 
+# Criação automática de tabelas no Streamlit Cloud
+if os.environ.get("STREAMLIT_CLOUD") or os.environ.get("IS_STREAMLIT_CLOUD"):
+    try:
+        import asyncio
+        from database.config.connection import create_tables
+        asyncio.run(create_tables())
+        print("Tabelas criadas/verificadas automaticamente para Streamlit Cloud.")
+    except Exception as e:
+        print(f"Erro ao criar tabelas no Streamlit Cloud: {e}")
+
 from dotenv import load_dotenv
 import streamlit as st
 from streamlit_option_menu import option_menu
