@@ -25,6 +25,81 @@ if "username" not in st.session_state:
     st.session_state.username = None
 if "user_role" not in st.session_state:
     st.session_state.user_role = None
+if "show_email_dialog" not in st.session_state:
+    st.session_state.show_email_dialog = False
+
+
+@st.cache_data(show_spinner=False)
+def build_local_image_data_uri(relative_path: str) -> str:
+    image_path = Path(__file__).resolve().parent / relative_path
+    if not image_path.exists():
+        return ""
+
+    image_bytes = image_path.read_bytes()
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    suffix = image_path.suffix.lower()
+    mime_type = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+    }.get(suffix, "application/octet-stream")
+    return f"data:{mime_type};base64,{encoded}"
+
+
+@st.dialog("📧 Verificação de E-mail")
+def _email_sent_dialog():
+    """Dialog exibido após o envio do código de verificação."""
+    image_uri = build_local_image_data_uri("src/img/perfil.png")
+    email_dest = st.session_state.get("email_verificacao", "")
+
+    st.markdown(
+        f"""
+        <div style="text-align:center;margin-bottom:1rem;">
+            <img src="{image_uri}" alt="Chef Delivery"
+                 style="width:100px;border-radius:50%;
+                        border:3px solid rgba(122,240,176,0.35);
+                        box-shadow:0 0 24px rgba(0,255,170,0.25);">
+        </div>
+        <div style="text-align:center;margin-bottom:1.2rem;">
+            <span style="font-size:1.3rem;font-weight:700;
+                         background:linear-gradient(90deg,#fff,#7af0b0,#5ec8ff);
+                         -webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+                🍔 Chef Delivery
+            </span>
+        </div>
+        <div style="background:rgba(122,240,176,0.08);border:1px solid rgba(122,240,176,0.18);
+                    border-radius:14px;padding:1.2rem;margin-bottom:1rem;">
+            <p style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#7af0b0;">
+                ✅ Código enviado com sucesso!
+            </p>
+            <p style="margin:0;font-size:0.92rem;color:#d8e4f3;">
+                Enviamos um código de 6 dígitos para<br>
+                <strong style="color:#fff;">{email_dest}</strong>
+            </p>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+                    border-radius:14px;padding:1.2rem;">
+            <p style="margin:0 0 0.6rem 0;font-size:0.95rem;font-weight:600;color:#e8f5ff;">
+                📋 Passo a passo:
+            </p>
+            <ol style="margin:0;padding-left:1.2rem;color:#d4e1ef;font-size:0.9rem;line-height:1.8;">
+                <li>Abra sua caixa de entrada do e-mail informado</li>
+                <li>Procure o e-mail com assunto <em>"🔐 Chef Delivery — Código de verificação"</em></li>
+                <li>Copie o <strong>código de 6 dígitos</strong> do e-mail</li>
+                <li>Cole o código no campo de verificação na sidebar</li>
+                <li>Clique em <strong>"✅ Verificar"</strong> para ativar sua conta</li>
+            </ol>
+        </div>
+        <p style="margin-top:1rem;font-size:0.82rem;color:#888;text-align:center;">
+            💡 Não encontrou? Verifique a pasta de spam ou lixo eletrônico.
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("👍 Entendi", use_container_width=True, key="btn_dialog_ok"):
+        st.session_state.show_email_dialog = False
+        st.rerun()
 
 
 def _do_login(email: str, password: str) -> bool:
@@ -64,24 +139,6 @@ def _do_logout():
     st.session_state.primeiro_nome = ""
     st.session_state.user_role = None
     st.session_state.user_id = None
-
-
-@st.cache_data(show_spinner=False)
-def build_local_image_data_uri(relative_path: str) -> str:
-    image_path = Path(__file__).resolve().parent / relative_path
-    if not image_path.exists():
-        return ""
-
-    image_bytes = image_path.read_bytes()
-    encoded = base64.b64encode(image_bytes).decode("ascii")
-    suffix = image_path.suffix.lower()
-    mime_type = {
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".webp": "image/webp",
-    }.get(suffix, "application/octet-stream")
-    return f"data:{mime_type};base64,{encoded}"
 
 
 @st.cache_data(show_spinner=False)
@@ -823,6 +880,10 @@ class MultiPage:
 
 inject_global_style()
 
+# ── Dialog de confirmação de envio do código ──
+if st.session_state.get("show_email_dialog"):
+    _email_sent_dialog()
+
 with st.sidebar:
     # ── Inicializar estado do formulário ──
     if "auth_mode" not in st.session_state:
@@ -889,7 +950,13 @@ with st.sidebar:
                 key="signup_foto",
             )
             if foto_signup:
-                st.image(foto_signup, width=80, caption=foto_signup.name)
+                col_img, col_info = st.columns([1, 2])
+                with col_img:
+                    st.image(foto_signup, width=80)
+                with col_info:
+                    st.caption(f"📎 {foto_signup.name}")
+                    size_kb = len(foto_signup.getvalue()) / 1024
+                    st.caption(f"📐 {size_kb:.0f} KB")
 
             with st.form("signup_form", clear_on_submit=True):
                 nome_signup = st.text_input("Nome completo")
@@ -980,6 +1047,7 @@ with st.sidebar:
                                     """,
                                 )
                                 st.session_state.verificacao_pendente = True
+                                st.session_state.show_email_dialog = True
                                 st.rerun()
                             except Exception as e:
                                 st.warning(
@@ -1042,14 +1110,38 @@ with st.sidebar:
 
                         ok = _aio.run(_verificar_email())
                         if ok:
-                            st.success(
-                                "✅ E-mail verificado com sucesso! Use o Login para entrar."
-                            )
+                            # Login automático após verificação
+                            email_v = st.session_state.email_verificacao
                             st.session_state.verificacao_pendente = False
                             st.session_state.codigo_verificacao = None
                             st.session_state.email_verificacao = None
                             st.session_state.usuario_id_verificacao = None
-                            st.session_state.auth_mode = "login"
+
+                            # Buscar usuário e autenticar direto
+                            from database.services.auth_service import (
+                                authenticate_usuario as _auth_user,
+                            )
+
+                            async def _auto_login():
+                                session = await _db_session()
+                                try:
+                                    from database.repositories import usuario_repo as _ur
+                                    user = await _ur.get_usuario_by_email(session, email_v)
+                                    return user
+                                finally:
+                                    await session.close()
+
+                            user = _aio.run(_auto_login())
+                            if user:
+                                st.session_state.authentication_status = True
+                                st.session_state.username = user.email
+                                st.session_state.name = user.nome
+                                st.session_state.primeiro_nome = (
+                                    user.nome.split(" ")[0] if user.nome else ""
+                                )
+                                st.session_state.user_role = user.role
+                                st.session_state.user_id = user.id
+                                st.session_state.auth_mode = "login"
                             st.rerun()
                     else:
                         st.error("❌ Código incorreto. Tente novamente.")

@@ -5,59 +5,119 @@ def showParceiros():
     st.title("🤝 Parceiros")
     st.markdown("Gerencie os parceiros cadastrados no Chef Delivery.")
 
-    # --- Filtros ---
-    col_busca, col_filtro = st.columns([3, 1])
-    with col_busca:
-        busca = st.text_input("🔍 Buscar parceiro", placeholder="Nome, e-mail ou telefone...")
-    with col_filtro:
-        filtro_status = st.selectbox("Status", ["Todos", "Ativos", "Inativos"])
+    tab_listar, tab_criar, tab_editar, tab_deletar = st.tabs(
+        ["📋 Listar", "➕ Criar", "✏️ Editar", "🗑️ Deletar"]
+    )
 
-    st.markdown("---")
-
-    # --- Lista de parceiros (dados de exemplo) ---
+    # ── Dados de exemplo ──
     parceiros_exemplo = [
         {"nome": "Regiane dos Santos", "email": "regiane@gmail.com", "whatsapp": "(31) 99999-0001", "vendas": 42, "status": "Ativo"},
         {"nome": "Alan Teste", "email": "alanteste@gmail.com", "whatsapp": "(31) 99999-0005", "vendas": 18, "status": "Ativo"},
         {"nome": "Grazi Teste", "email": "grazi@gmail.com", "whatsapp": "(31) 99999-0006", "vendas": 25, "status": "Ativo"},
         {"nome": "Dani Teste", "email": "dani@gmail.com", "whatsapp": "(31) 99999-0007", "vendas": 10, "status": "Inativo"},
     ]
+    parceiros_nomes = [p["nome"] for p in parceiros_exemplo]
 
-    # Aplicar filtro de busca
-    if busca:
-        busca_lower = busca.lower()
-        parceiros_exemplo = [
-            p for p in parceiros_exemplo
-            if busca_lower in p["nome"].lower()
-            or busca_lower in p["email"].lower()
-            or busca_lower in p["whatsapp"]
-        ]
+    # ══════════════════════════════════════════════════
+    # TAB LISTAR
+    # ══════════════════════════════════════════════════
+    with tab_listar:
+        col_busca, col_filtro = st.columns([3, 1])
+        with col_busca:
+            busca = st.text_input("🔍 Buscar parceiro", placeholder="Nome, e-mail ou telefone...", key="parc_busca")
+        with col_filtro:
+            filtro_status = st.selectbox("Status", ["Todos", "Ativos", "Inativos"], key="parc_filtro")
 
-    # Aplicar filtro de status
-    if filtro_status != "Todos":
-        parceiros_exemplo = [p for p in parceiros_exemplo if p["status"] == filtro_status]
+        st.markdown("---")
 
-    # --- Métricas ---
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total de Parceiros", len(parceiros_exemplo))
-    col2.metric("Ativos", sum(1 for p in parceiros_exemplo if p["status"] == "Ativo"))
-    col3.metric("Total de Vendas", sum(p["vendas"] for p in parceiros_exemplo))
+        exibir = list(parceiros_exemplo)
+        if busca:
+            busca_lower = busca.lower()
+            exibir = [
+                p for p in exibir
+                if busca_lower in p["nome"].lower()
+                or busca_lower in p["email"].lower()
+                or busca_lower in p["whatsapp"]
+            ]
+        if filtro_status != "Todos":
+            status_val = "Ativo" if filtro_status == "Ativos" else "Inativo"
+            exibir = [p for p in exibir if p["status"] == status_val]
 
-    st.markdown("---")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total de Parceiros", len(exibir))
+        col2.metric("Ativos", sum(1 for p in exibir if p["status"] == "Ativo"))
+        col3.metric("Total de Vendas", sum(p["vendas"] for p in exibir))
 
-    # --- Tabela de parceiros ---
-    if parceiros_exemplo:
-        for parceiro in parceiros_exemplo:
-            with st.container():
-                c1, c2, c3, c4, c5 = st.columns([3, 3, 2, 1, 1])
-                c1.write(f"**{parceiro['nome']}**")
-                c2.write(parceiro["email"])
-                c3.write(parceiro["whatsapp"])
-                c4.write(f"🛒 {parceiro['vendas']}")
-                status_color = "🟢" if parceiro["status"] == "Ativo" else "🔴"
-                c5.write(f"{status_color} {parceiro['status']}")
-            st.markdown("<hr style='margin:0.3rem 0; border-color: rgba(120,255,182,0.1);'>", unsafe_allow_html=True)
-    else:
-        st.info("Nenhum parceiro encontrado.")
+        st.markdown("---")
 
-    st.markdown("---")
-    st.caption("💡 Em breve: relatório de vendas por parceiro e comissões.")
+        if exibir:
+            for parceiro in exibir:
+                with st.container():
+                    c1, c2, c3, c4, c5 = st.columns([3, 3, 2, 1, 1])
+                    c1.write(f"**{parceiro['nome']}**")
+                    c2.write(parceiro["email"])
+                    c3.write(parceiro["whatsapp"])
+                    c4.write(f"🛒 {parceiro['vendas']}")
+                    status_color = "🟢" if parceiro["status"] == "Ativo" else "🔴"
+                    c5.write(f"{status_color} {parceiro['status']}")
+                st.markdown("<hr style='margin:0.3rem 0; border-color: rgba(120,255,182,0.1);'>", unsafe_allow_html=True)
+        else:
+            st.info("Nenhum parceiro encontrado.")
+
+    # ══════════════════════════════════════════════════
+    # TAB CRIAR
+    # ══════════════════════════════════════════════════
+    with tab_criar:
+        st.subheader("➕ Cadastrar Novo Parceiro")
+        with st.form("form_criar_parceiro", clear_on_submit=True):
+            nome = st.text_input("Nome completo")
+            email = st.text_input("E-mail")
+            whatsapp = st.text_input("WhatsApp")
+            cpf_cnpj = st.text_input("CPF / CNPJ")
+            endereco = st.text_area("Endereço")
+            comissao = st.number_input("Comissão (%)", min_value=0.0, max_value=100.0, step=0.5, value=10.0, format="%.1f")
+            submitted = st.form_submit_button("✅ Cadastrar Parceiro", use_container_width=True)
+            if submitted:
+                if not all([nome, email, whatsapp]):
+                    st.error("Preencha os campos obrigatórios: Nome, E-mail e WhatsApp.")
+                else:
+                    st.success(f"✅ Parceiro **{nome}** cadastrado com comissão de {comissao}%!")
+
+    # ══════════════════════════════════════════════════
+    # TAB EDITAR
+    # ══════════════════════════════════════════════════
+    with tab_editar:
+        st.subheader("✏️ Editar Parceiro")
+        parceiro_sel = st.selectbox("Selecione o parceiro", parceiros_nomes, key="parc_editar_sel")
+        dados = next((p for p in parceiros_exemplo if p["nome"] == parceiro_sel), {})
+
+        with st.form("form_editar_parceiro"):
+            nome_edit = st.text_input("Nome completo", value=dados.get("nome", ""))
+            email_edit = st.text_input("E-mail", value=dados.get("email", ""))
+            whatsapp_edit = st.text_input("WhatsApp", value=dados.get("whatsapp", ""))
+            cpf_cnpj_edit = st.text_input("CPF / CNPJ")
+            endereco_edit = st.text_area("Endereço")
+            comissao_edit = st.number_input("Comissão (%)", min_value=0.0, max_value=100.0, step=0.5, value=10.0, format="%.1f")
+            status_edit = st.selectbox("Status", ["Ativo", "Inativo"],
+                                       index=0 if dados.get("status") == "Ativo" else 1)
+            salvar = st.form_submit_button("💾 Salvar Alterações", use_container_width=True)
+            if salvar:
+                st.success(f"✅ Parceiro **{nome_edit}** atualizado com sucesso!")
+
+    # ══════════════════════════════════════════════════
+    # TAB DELETAR
+    # ══════════════════════════════════════════════════
+    with tab_deletar:
+        st.subheader("🗑️ Remover Parceiro")
+        st.warning("⚠️ Esta ação é irreversível. O parceiro será removido permanentemente.")
+        parceiro_del = st.selectbox("Selecione o parceiro para remover", parceiros_nomes, key="parc_del_sel")
+        dados_del = next((p for p in parceiros_exemplo if p["nome"] == parceiro_del), {})
+        st.info(f"📧 {dados_del.get('email', '')} | 🛒 {dados_del.get('vendas', 0)} vendas")
+
+        col_confirm, col_cancel = st.columns(2)
+        with col_confirm:
+            if st.button("🗑️ Confirmar Exclusão", use_container_width=True, type="primary", key="parc_del_confirm"):
+                st.success(f"✅ Parceiro **{parceiro_del}** removido com sucesso!")
+        with col_cancel:
+            if st.button("❌ Cancelar", use_container_width=True, key="parc_del_cancel"):
+                st.info("Exclusão cancelada.")

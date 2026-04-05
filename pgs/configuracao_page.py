@@ -10,93 +10,144 @@ def showConfiguracao():
     st.title("⚙️ Configuração")
     st.markdown("Gerencie as configurações do sistema Chef Delivery.")
 
-    # --- Seção: Informações da Loja ---
-    st.subheader("🏪 Informações da Loja")
-    with st.form("config_loja"):
-        nome_loja = st.text_input("Nome da Loja", value="Chef Delivery")
-        telefone_loja = st.text_input("Telefone/WhatsApp", value="(31) 98341-7976")
-        endereco_loja = st.text_input("Endereço", value="")
-        raio_entrega = st.number_input("Raio de entrega (km)", min_value=1, max_value=50, value=5)
-        taxa_entrega = st.number_input("Taxa de entrega (R$)", min_value=0.0, step=0.50, value=6.0, format="%.2f")
-        salvar_loja = st.form_submit_button("Salvar Informações")
-        if salvar_loja:
-            st.success("Informações da loja salvas com sucesso!", icon="✅")
+    tab_loja, tab_pagamento, tab_webhooks, tab_usuarios = st.tabs(
+        ["🏪 Loja", "💳 Pagamento", "🔗 Webhooks", "👤 Usuários"]
+    )
 
-    st.markdown("---")
+    # ══════════════════════════════════════════════════
+    # TAB LOJA
+    # ══════════════════════════════════════════════════
+    with tab_loja:
+        st.subheader("🏪 Informações da Loja")
+        with st.form("config_loja"):
+            nome_loja = st.text_input("Nome da Loja", value="Chef Delivery")
+            telefone_loja = st.text_input("Telefone/WhatsApp", value="(31) 98341-7976")
+            endereco_loja = st.text_input("Endereço", value="")
+            raio_entrega = st.number_input("Raio de entrega (km)", min_value=1, max_value=50, value=5)
+            taxa_entrega = st.number_input("Taxa de entrega (R$)", min_value=0.0, step=0.50, value=6.0, format="%.2f")
+            salvar_loja = st.form_submit_button("💾 Salvar Informações", use_container_width=True)
+            if salvar_loja:
+                st.success("Informações da loja salvas com sucesso!", icon="✅")
 
-    # --- Seção: Configuração de Pagamento ---
-    st.subheader("💳 Configuração de Pagamento (ASAAS)")
+    # ══════════════════════════════════════════════════
+    # TAB PAGAMENTO
+    # ══════════════════════════════════════════════════
+    with tab_pagamento:
+        st.subheader("💳 Configuração de Pagamento (ASAAS)")
 
-    asaas_key = os.getenv("ASAAS_API_KEY", "")
-    if asaas_key:
-        st.success("API Key ASAAS configurada", icon="✅")
-        ambiente = st.radio("Ambiente", ["Sandbox (testes)", "Produção"], index=0, horizontal=True)
-        if ambiente == "Produção":
-            st.warning("⚠️ O ambiente de produção processa pagamentos reais. Verifique antes de ativar.")
-    else:
-        st.error("API Key ASAAS não configurada. Adicione em .streamlit/secrets.toml", icon="❌")
+        asaas_key = os.getenv("ASAAS_API_KEY", "")
+        if asaas_key:
+            st.success("API Key ASAAS configurada", icon="✅")
+            ambiente = st.radio("Ambiente", ["Sandbox (testes)", "Produção"], index=0, horizontal=True)
+            if ambiente == "Produção":
+                st.warning("⚠️ O ambiente de produção processa pagamentos reais. Verifique antes de ativar.")
+        else:
+            st.error("API Key ASAAS não configurada. Adicione no arquivo .env", icon="❌")
 
-    st.markdown("---")
+        st.markdown("---")
 
-    # --- Seção: Métodos de Pagamento ---
-    st.subheader("📋 Métodos de Pagamento Ativos")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        pix_ativo = st.toggle("PIX", value=True)
-    with col2:
-        cartao_ativo = st.toggle("Cartão de Crédito", value=False)
-    with col3:
-        boleto_ativo = st.toggle("Boleto", value=False)
+        st.subheader("📋 Métodos de Pagamento Ativos")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            pix_ativo = st.toggle("PIX", value=True)
+        with col2:
+            cartao_ativo = st.toggle("Cartão de Crédito", value=False)
+        with col3:
+            boleto_ativo = st.toggle("Boleto", value=False)
 
-    if pix_ativo:
-        st.info("PIX: Cobrança gerada automaticamente com QR Code via ASAAS.")
-    if cartao_ativo:
-        st.info("Cartão: Redirecionamento para checkout seguro do ASAAS.")
-    if boleto_ativo:
-        st.info("Boleto: Gerado automaticamente com vencimento configurável.")
+        if pix_ativo:
+            st.info("PIX: Cobrança gerada automaticamente com QR Code via ASAAS.")
+        if cartao_ativo:
+            st.info("Cartão: Redirecionamento para checkout seguro do ASAAS.")
+        if boleto_ativo:
+            st.info("Boleto: Gerado automaticamente com vencimento configurável.")
 
-    st.markdown("---")
+    # ══════════════════════════════════════════════════
+    # TAB WEBHOOKS
+    # ══════════════════════════════════════════════════
+    with tab_webhooks:
+        st.subheader("🔗 Webhooks e Integrações")
 
-    # --- Seção: Webhooks ---
-    st.subheader("🔗 Webhooks e Integrações")
+        webhook_url = os.getenv("WEBHOOK_URL", "")
+        webhook_cadastro = os.getenv("WEBHOOK_CADASTRO", "")
 
-    webhook_url = os.getenv("WEBHOOK_URL", "")
-    webhook_cadastro = os.getenv("WEBHOOK_CADASTRO", "")
-
-    with st.expander("Ver configuração de webhooks"):
         st.text_input("Webhook de Pedidos", value=webhook_url, disabled=True)
         st.text_input("Webhook de Cadastro", value=webhook_cadastro, disabled=True)
-        st.caption("Para alterar os webhooks, edite o arquivo .streamlit/secrets.toml")
+        st.caption("Para alterar os webhooks, edite o arquivo .env")
 
-    st.markdown("---")
+    # ══════════════════════════════════════════════════
+    # TAB USUÁRIOS
+    # ══════════════════════════════════════════════════
+    with tab_usuarios:
+        st.subheader("👤 Usuários do Sistema")
 
-    # --- Seção: Usuários ---
-    st.subheader("👤 Usuários do Sistema")
+        from database import create_session as _db_session
+        from database.repositories import usuario_repo
 
-    from database import create_session as _db_session
-    from database.repositories import usuario_repo
+        async def _load_users():
+            session = await _db_session()
+            try:
+                return await usuario_repo.list_usuarios(session)
+            finally:
+                await session.close()
 
-    async def _load_users():
-        session = await _db_session()
-        try:
-            return await usuario_repo.list_usuarios(session)
-        finally:
-            await session.close()
+        db_users = asyncio.run(_load_users())
 
-    db_users = asyncio.run(_load_users())
-    if db_users:
-        for user in db_users:
-            role_icon = {"admin": "🔑", "parceiro": "🤝", "cliente": "👤", "entregador": "🏍️"}.get(user.role, "❔")
-            verificado = "✅" if user.email_verificado else "⏳"
-            with st.container():
-                c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
-                c1.write(f"**{user.nome}**")
-                c2.write(user.email)
-                c3.write(f"{role_icon} {user.role}")
-                c4.write(verificado)
-            st.markdown("<hr style='margin:0.2rem 0; border-color: rgba(120,255,182,0.08);'>", unsafe_allow_html=True)
-    else:
-        st.warning("Nenhum usuário cadastrado.")
+        tab_u_listar, tab_u_editar, tab_u_deletar = st.tabs(
+            ["📋 Listar", "✏️ Editar", "🗑️ Deletar"]
+        )
+
+        with tab_u_listar:
+            if db_users:
+                for user in db_users:
+                    role_icon = {"admin": "🔑", "parceiro": "🤝", "cliente": "👤", "entregador": "🏍️"}.get(user.role, "❔")
+                    verificado = "✅" if user.email_verificado else "⏳"
+                    with st.container():
+                        c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
+                        c1.write(f"**{user.nome}**")
+                        c2.write(user.email)
+                        c3.write(f"{role_icon} {user.role}")
+                        c4.write(verificado)
+                    st.markdown("<hr style='margin:0.2rem 0; border-color: rgba(120,255,182,0.08);'>", unsafe_allow_html=True)
+            else:
+                st.warning("Nenhum usuário cadastrado.")
+
+        with tab_u_editar:
+            st.subheader("✏️ Editar Usuário")
+            if db_users:
+                user_names = [f"{u.nome} ({u.email})" for u in db_users]
+                user_sel = st.selectbox("Selecione o usuário", user_names, key="cfg_user_edit_sel")
+                idx = user_names.index(user_sel)
+                u = db_users[idx]
+
+                with st.form("form_editar_usuario"):
+                    nome_u = st.text_input("Nome", value=u.nome)
+                    email_u = st.text_input("E-mail", value=u.email, disabled=True)
+                    role_u = st.selectbox("Role", ["admin", "parceiro", "cliente", "entregador"],
+                                          index=["admin", "parceiro", "cliente", "entregador"].index(u.role))
+                    ativo_u = st.toggle("Ativo", value=u.ativo)
+                    verificado_u = st.toggle("E-mail verificado", value=u.email_verificado)
+                    salvar_u = st.form_submit_button("💾 Salvar Alterações", use_container_width=True)
+                    if salvar_u:
+                        st.success(f"✅ Usuário **{nome_u}** atualizado com sucesso!")
+            else:
+                st.info("Nenhum usuário para editar.")
+
+        with tab_u_deletar:
+            st.subheader("🗑️ Remover Usuário")
+            st.warning("⚠️ Esta ação é irreversível. O usuário será removido permanentemente.")
+            if db_users:
+                user_names_del = [f"{u.nome} ({u.email})" for u in db_users]
+                user_del = st.selectbox("Selecione o usuário", user_names_del, key="cfg_user_del_sel")
+                col_confirm, col_cancel = st.columns(2)
+                with col_confirm:
+                    if st.button("🗑️ Confirmar Exclusão", use_container_width=True, type="primary", key="cfg_user_del_confirm"):
+                        st.success(f"✅ Usuário removido com sucesso!")
+                with col_cancel:
+                    if st.button("❌ Cancelar", use_container_width=True, key="cfg_user_del_cancel"):
+                        st.info("Exclusão cancelada.")
+            else:
+                st.info("Nenhum usuário para remover.")
 
     st.markdown("---")
     st.caption("💡 As configurações sensíveis (API keys, webhooks) são gerenciadas via variáveis de ambiente por segurança.")

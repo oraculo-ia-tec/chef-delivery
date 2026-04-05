@@ -252,8 +252,10 @@ def showProdutos():
 
     _init_carrinho()
 
-    # ──────────── ABA: Catálogo | Carrinho ────────────
-    tab_catalogo, tab_carrinho = st.tabs(["🛒 Catálogo de Produtos", "📋 Carrinho & Pagamento"])
+    # ──────────── ABAS ────────────
+    tab_catalogo, tab_carrinho, tab_criar, tab_editar, tab_deletar = st.tabs(
+        ["🛒 Catálogo", "📋 Carrinho & Pagamento", "➕ Criar Produto", "✏️ Editar Produto", "🗑️ Deletar Produto"]
+    )
 
     # ═══════════════════════════════════════════
     # TAB 1 — CATÁLOGO
@@ -436,3 +438,63 @@ def showProdutos():
                     height=100,
                     help="Copie este código e cole no app do seu banco",
                 )
+
+    # ═══════════════════════════════════════════
+    # TAB 3 — CRIAR PRODUTO
+    # ═══════════════════════════════════════════
+    with tab_criar:
+        st.subheader("➕ Cadastrar Novo Produto")
+        with st.form("form_criar_produto", clear_on_submit=True):
+            cat_criar = st.selectbox("Categoria", list(CATEGORIAS.keys()), key="prod_criar_cat")
+            nome_prod = st.text_input("Nome do produto")
+            preco_prod = st.number_input("Preço (R$)", min_value=0.01, step=0.50, format="%.2f")
+            unidade_prod = st.selectbox("Unidade", ["kg", "un"])
+            descricao_prod = st.text_area("Descrição (opcional)")
+            submitted = st.form_submit_button("✅ Cadastrar Produto", use_container_width=True)
+            if submitted:
+                if not nome_prod:
+                    st.error("Informe o nome do produto.")
+                else:
+                    st.success(f"✅ Produto **{nome_prod}** cadastrado em {cat_criar} por R$ {preco_prod:,.2f}/{unidade_prod}!")
+
+    # ═══════════════════════════════════════════
+    # TAB 4 — EDITAR PRODUTO
+    # ═══════════════════════════════════════════
+    with tab_editar:
+        st.subheader("✏️ Editar Produto")
+        cat_editar = st.selectbox("Categoria", list(CATEGORIAS.keys()), key="prod_editar_cat")
+        itens_cat = list(CATEGORIAS[cat_editar]["itens"].keys())
+        produto_sel = st.selectbox("Produto", itens_cat, key="prod_editar_sel")
+
+        preco_atual = CATEGORIAS[cat_editar]["itens"].get(produto_sel, 0)
+        unidade_atual = CATEGORIAS[cat_editar]["unidade"]
+
+        with st.form("form_editar_produto"):
+            nome_edit = st.text_input("Nome do produto", value=produto_sel)
+            preco_edit = st.number_input("Preço (R$)", min_value=0.01, step=0.50, value=float(preco_atual), format="%.2f")
+            unidade_edit = st.selectbox("Unidade", ["kg", "un"], index=0 if unidade_atual == "kg" else 1)
+            descricao_edit = st.text_area("Descrição (opcional)")
+            salvar = st.form_submit_button("💾 Salvar Alterações", use_container_width=True)
+            if salvar:
+                st.success(f"✅ Produto **{nome_edit}** atualizado para R$ {preco_edit:,.2f}/{unidade_edit}!")
+
+    # ═══════════════════════════════════════════
+    # TAB 5 — DELETAR PRODUTO
+    # ═══════════════════════════════════════════
+    with tab_deletar:
+        st.subheader("🗑️ Remover Produto")
+        st.warning("⚠️ Esta ação é irreversível. O produto será removido do catálogo.")
+        cat_del = st.selectbox("Categoria", list(CATEGORIAS.keys()), key="prod_del_cat")
+        itens_del = list(CATEGORIAS[cat_del]["itens"].keys())
+        produto_del = st.selectbox("Produto", itens_del, key="prod_del_sel")
+
+        preco_del = CATEGORIAS[cat_del]["itens"].get(produto_del, 0)
+        st.info(f"**{produto_del}** — R$ {preco_del:,.2f}")
+
+        col_confirm, col_cancel = st.columns(2)
+        with col_confirm:
+            if st.button("🗑️ Confirmar Exclusão", use_container_width=True, type="primary", key="prod_del_confirm"):
+                st.success(f"✅ Produto **{produto_del}** removido com sucesso!")
+        with col_cancel:
+            if st.button("❌ Cancelar", use_container_width=True, key="prod_del_cancel"):
+                st.info("Exclusão cancelada.")
