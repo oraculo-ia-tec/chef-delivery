@@ -424,8 +424,21 @@ async def showPedido():
 
     system_prompt = _build_system_prompt(primeiro_nome)
 
+    # Avatar do usuário: busca personalizada por e-mail, fallback para padrão
+    import os
+    from pathlib import Path
+    user_email = st.session_state.username if "username" in st.session_state else None
+    avatar_path = "./src/img/cliente.png"
+    if user_email:
+        profile_dir = Path("src/img/profiles")
+        for ext in ["jpg", "jpeg", "png", "webp"]:
+            candidate = profile_dir / f"{user_email}.{ext}"
+            if candidate.exists():
+                avatar_path = f"./src/img/profiles/{user_email}.{ext}"
+                break
+
     icons = {"assistant": "./src/img/perfil-chat1.png",
-             "user": "./src/img/cliente.png"}
+             "user": avatar_path}
 
     # Store LLM-generated responses
     if "messages" not in st.session_state.keys():
@@ -490,7 +503,7 @@ async def showPedido():
     # User-provided prompt
     if prompt := st.chat_input(disabled=not GROQ_API_KEY):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="./src/img/cliente.png"):
+        with st.chat_message("user", avatar=avatar_path):
             st.write(prompt)
 
     # Generate a new response if last message is not from assistant

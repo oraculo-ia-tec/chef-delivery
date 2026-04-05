@@ -24,6 +24,28 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Notificador:
+    def enviar_email_recuperacao(self, destino: str, nome: str, nova_senha: str) -> dict:
+        """
+        Envia e-mail de recuperação de senha para o usuário.
+        """
+        assunto = "🔐 Chef Delivery — Recuperação de senha"
+        mensagem = f"""
+        <div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:2rem;border-radius:16px;background:linear-gradient(145deg,#1a1a2e,#16213e);color:#e8f4ee;'>
+            <h2 style='color:#7af0b0;text-align:center;'>🍔 Chef Delivery</h2>
+            <p>Olá, <strong>{nome.split(' ')[0]}</strong>!</p>
+            <p>Sua nova senha de acesso é:</p>
+            <div style='text-align:center;margin:1.5rem 0;'>
+                <span style='font-size:2rem;font-weight:700;letter-spacing:8px;color:#7af0b0;background:rgba(122,240,176,0.1);padding:0.8rem 1.5rem;border-radius:12px;border:2px solid rgba(122,240,176,0.3);'>
+                    {nova_senha}
+                </span>
+            </div>
+            <p style='font-size:0.9rem;color:#c0d8e8;'>Altere sua senha após o login para garantir sua segurança.</p>
+            <hr style='border-color:rgba(122,240,176,0.15);margin:1.5rem 0;'>
+            <p style='font-size:0.78rem;color:#888;'>Se você não solicitou esta recuperação, ignore este e-mail.</p>
+        </div>
+        """
+        return self.enviar_email(destino, assunto, mensagem)
+
     def __init__(self):
         self.google_client_id = os.getenv("GOOGLE_CLIENT_ID")
         self.google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")

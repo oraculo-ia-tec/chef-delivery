@@ -1,0 +1,200 @@
+import streamlit as st
+import pandas as pd
+from datetime import datetime
+
+
+def _init_preparacao_state():
+    """Inicializa filas de preparação no session_state."""
+    if "fila_preparando" not in st.session_state:
+        # Pedidos que chegaram com pagamento confirmado (webhook ASAAS)
+        st.session_state.fila_preparando = [
+            {
+                "pedido_id": "PROD-A1B2C3D4",
+                "cliente": "Ramone Teste",
+                "whatsapp": "(31) 99999-0001",
+                "endereco": "Rua das Flores, 123 - Bairro Centro",
+                "itens": "Picanha suína 3kg, Linguiça caseira 2kg",
+                "valor": 130.95,
+                "horario_chegada": "2026-04-05 10:15:00",
+                "inicio_preparacao": None,
+                "fim_preparacao": None,
+                "status": "aguardando",
+            },
+            {
+                "pedido_id": "PROD-E5F6G7H8",
+                "cliente": "Adriano Stellantis",
+                "whatsapp": "(31) 99999-0002",
+                "endereco": "Av. Brasil, 456 - Bairro Savassi",
+                "itens": "Kit Gold, Coca-Cola 2L",
+                "valor": 159.98,
+                "horario_chegada": "2026-04-05 10:22:00",
+                "inicio_preparacao": None,
+                "fim_preparacao": None,
+                "status": "aguardando",
+            },
+            {
+                "pedido_id": "PROD-I9J0K1L2",
+                "cliente": "Vovô Tec",
+                "whatsapp": "(31) 99999-0003",
+                "endereco": "Rua Minas Gerais, 789 - Bairro Funcionários",
+                "itens": "Contra filé 5kg, Fraldinha 2kg, Carvão 3kg",
+                "valor": 265.92,
+                "horario_chegada": "2026-04-05 10:30:00",
+                "inicio_preparacao": "2026-04-05 10:35:00",
+                "fim_preparacao": None,
+                "status": "preparando",
+            },
+        ]
+
+    if "fila_entrega" not in st.session_state:
+        st.session_state.fila_entrega = []
+
+    if "historico_entregas" not in st.session_state:
+        st.session_state.historico_entregas = []
+
+    # Garante que entregadores existam
+    if "entregadores" not in st.session_state:
+        st.session_state.entregadores = []
+
+
+def _formatar_dt(dt_str: str | None) -> str:
+    if not dt_str:
+        return "—"
+    try:
+        dt = datetime.fromisoformat(dt_str)
+        return dt.strftime("%d/%m/%Y %H:%M:%S")
+    except (ValueError, TypeError):
+        return str(dt_str)
+
+
+def _formatar_hora(dt_str: str | None) -> str:
+    if not dt_str:
+        return "—"
+    try:
+        dt = datetime.fromisoformat(dt_str)
+        return dt.strftime("%H:%M:%S")
+    except (ValueError, TypeError):
+        return str(dt_str)
+
+
+# ═══════════════════════════════════════════
+# CSS GLOBAL DA PÁGINA
+# ═══════════════════════════════════════════
+_CSS = """
+<style>
+/* ── Card de pedido em preparação ── */
+.prep-card {
+    position: relative;
+    padding: 1.2rem 1.4rem;
+    border-radius: 18px;
+    margin-bottom: 1rem;
+    background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid rgba(120,255,182,0.14);
+    box-shadow: 0 0 20px rgba(0,255,170,0.04);
+    animation: slideInPrep 0.5s ease-out;
+}
+.prep-card-aguardando { border-left: 4px solid #ffd700; }
+.prep-card-preparando { border-left: 4px solid #7af0b0; }
+.prep-card-pronto     { border-left: 4px solid #5ec8ff; }
+
+.prep-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+.prep-header .pedido-id {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+}
+
+/* ── Barra de progresso animada ── */
+.progress-bar-wrap {
+    height: 6px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.08);
+    margin: 0.8rem 0;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s ease;
+}
+.progress-fill-aguardando {
+    width: 15%;
+    background: linear-gradient(90deg, #ffd700, #ffec80);
+    animation: pulseBar 1.8s ease-in-out infinite;
+}
+.progress-fill-preparando {
+    width: 60%;
+    background: linear-gradient(90deg, #7af0b0, #5ec8ff);
+    animation: pulseBar 1.4s ease-in-out infinite;
+}
+.progress-fill-pronto {
+    width: 100%;
+    background: linear-gradient(90deg, #5ec8ff, #a78bfa);
+}
+
+/* ── Status badges ── */
+.badge-aguardando {
+    display: inline-block; padding: 0.22rem 0.55rem; border-radius: 999px;
+    background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.3);
+    color: #ffd700; font-size: 0.78rem; font-weight: 600;
+    animation: pulseBadge 2s ease-in-out infinite;
+}
+.badge-preparando {
+    display: inline-block; padding: 0.22rem 0.55rem; border-radius: 999px;
+    background: rgba(122,240,176,0.15); border: 1px solid rgba(122,240,176,0.3);
+    color: #7af0b0; font-size: 0.78rem; font-weight: 600;
+    animation: pulseBadge 1.6s ease-in-out infinite;
+}
+.badge-pronto {
+    display: inline-block; padding: 0.22rem 0.55rem; border-radius: 999px;
+    background: rgba(94,200,255,0.15); border: 1px solid rgba(94,200,255,0.3);
+    color: #5ec8ff; font-size: 0.78rem; font-weight: 600;
+}
+
+/* ── Timeline ── */
+.timeline {
+    display: flex;
+    gap: 1.4rem;
+    margin: 0.6rem 0;
+    font-size: 0.85rem;
+    color: #c0d8e8;
+}
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.timeline-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dot-gold { background: #ffd700; box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+.dot-green { background: #7af0b0; box-shadow: 0 0 8px rgba(122,240,176,0.5); }
+.dot-blue { background: #5ec8ff; box-shadow: 0 0 8px rgba(94,200,255,0.5); }
+.dot-gray { background: #555; }
+
+/* ── Entrega card ── */
+.entrega-card {
+    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(94,200,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid rgba(94,200,255,0.18);
+    margin-bottom: 0.6rem;
+    animation: slideInPrep 0.4s ease-out;
+}
+
+@keyframes slideInPrep {
+    from { opacity: 0; transform: translateX(-16px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseBar {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+}
+@keyframes pulseBadge {
