@@ -8,13 +8,12 @@ from dotenv import load_dotenv
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-if os.environ.get("STREAMLIT_CLOUD") or os.environ.get("IS_STREAMLIT_CLOUD"):
-    try:
-        from database.config.connection import create_tables
-        asyncio.run(create_tables())
-        print("Tabelas criadas/verificadas automaticamente para Streamlit Cloud.")
-    except Exception as e:
-        print(f"Erro ao criar tabelas no Streamlit Cloud: {e}")
+try:
+    from database.config.connection import create_tables
+    asyncio.run(create_tables())
+    print("Tabelas criadas/verificadas automaticamente no startup.")
+except Exception as e:
+    print(f"Erro ao criar/verificar tabelas no startup: {e}")
 
 load_dotenv()
 
