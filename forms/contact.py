@@ -120,7 +120,8 @@ def cadastro_pedido():
                 # Exibe QR Code PIX
                 if result.get("pix_qr_code_base64"):
                     qr_bytes = base64.b64decode(result["pix_qr_code_base64"])
-                    st.image(qr_bytes, caption="Escaneie o QR Code para pagar", width=300)
+                    st.image(
+                        qr_bytes, caption="Escaneie o QR Code para pagar", width=300)
 
                 # Exibe código PIX copia-e-cola
                 if result.get("pix_payload"):
@@ -133,16 +134,19 @@ def cadastro_pedido():
 
                 # Exibe informações do pagamento
                 if result.get("pix_expiration_date"):
-                    st.info(f"⏰ Validade do PIX: {result['pix_expiration_date']}")
+                    st.info(
+                        f"⏰ Validade do PIX: {result['pix_expiration_date']}")
 
                 if result.get("payment_id"):
                     st.caption(f"ID do pagamento: {result['payment_id']}")
 
             except Exception as e:
                 st.error(f"Erro ao gerar cobrança PIX: {e}", icon="❌")
-                st.info("Seu pedido foi registrado. Entre em contato pelo WhatsApp para combinar o pagamento.")
+                st.info(
+                    "Seu pedido foi registrado. Entre em contato pelo WhatsApp para combinar o pagamento.")
         else:
-            st.warning("Sistema de pagamento não configurado. Entre em contato para combinar o pagamento.", icon="⚠️")
+            st.warning(
+                "Sistema de pagamento não configurado. Entre em contato para combinar o pagamento.", icon="⚠️")
 
         # --- Envia dados para o webhook (MAKE/automação) ---
         if WEBHOOK_URL:

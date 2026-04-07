@@ -8,17 +8,47 @@ from dotenv import load_dotenv
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-try:
-    from database.config.connection import create_tables
-    asyncio.run(create_tables())
-    print("Tabelas criadas/verificadas automaticamente no startup.")
-except Exception as e:
-    print(f"Erro ao criar/verificar tabelas no startup: {e}")
+from config import THEME_BASE
+
+if os.environ.get("STREAMLIT_CLOUD") or os.environ.get("IS_STREAMLIT_CLOUD"):
+    try:
+        from database.config.connection import create_tables
+        asyncio.run(create_tables())
+        print("Tabelas criadas/verificadas automaticamente para Streamlit Cloud.")
+    except Exception as e:
+        print(f"Erro ao criar tabelas no Streamlit Cloud: {e}")
+else:
+    try:
+        from database.config.connection import create_tables
+        asyncio.run(create_tables())
+        print("Tabelas criadas/verificadas automaticamente no startup.")
+    except Exception as e:
+        print(f"Erro ao criar/verificar tabelas no startup: {e}")
 
 load_dotenv()
 
 st.set_page_config(page_title="Chef Delivery", page_icon="🍔",
                    layout="wide", initial_sidebar_state="expanded")
+
+if THEME_BASE == "dark":
+    st.markdown(
+        """
+        <style>
+        :root { color-scheme: dark; }
+        .stApp {
+            background: linear-gradient(180deg, #08111f 0%, #0b1324 35%, #111827 100%);
+            color: #f8fafc;
+        }
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #07101d 0%, #0a1628 100%);
+        }
+        [data-testid="stHeader"] {
+            background: rgba(0,0,0,0);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 DEFAULT_SESSION_STATE = {
     "authentication_status": False,
@@ -113,8 +143,135 @@ def inject_global_style() -> None:
         """
         <style>
         .sidebar-user-photo-wrap {display:flex; justify-content:center; margin:0.35rem 0 1rem 0;}
-        .sidebar-user-photo {width:108px; height:108px; border-radius:50%; object-fit:cover; border:3px solid rgba(120,255,182,0.28); box-shadow:0 0 18px rgba(0,255,170,0.14);}
+        .sidebar-user-photo {width:108px; height:108px; border-radius:50%; object-fit:cover; border:3px solid rgba(122,240,176,0.32); box-shadow:0 0 22px rgba(0,255,170,0.18);}
         .sidebar-footer-space {height: 1rem;}
+        [data-testid="stSidebar"] .stButton > button {
+            background: linear-gradient(135deg, rgba(122,240,176,0.14), rgba(94,200,255,0.10));
+            color: #ecf4ff;
+            border: 1px solid rgba(122,240,176,0.22);
+            border-radius: 14px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 18px rgba(0,255,170,0.06);
+            font-weight: 600;
+        }
+        [data-testid="stSidebar"] .stButton > button:hover {
+            border-color: rgba(126,255,197,0.38);
+            color: #ffffff;
+            box-shadow: 0 0 0 1px rgba(126,255,197,0.08) inset, 0 0 24px rgba(0,255,170,0.12);
+        }
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] .stMarkdown,
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] span,
+        [data-testid="stSidebar"] div {
+            color: #d8e4f3;
+        }
+        [data-testid="stSidebar"] .stTextInput input,
+        [data-testid="stSidebar"] .stFileUploader,
+        [data-testid="stSidebar"] [data-baseweb="input"] > div {
+            background: rgba(255,255,255,0.05);
+            color: #ecf4ff;
+            border: 1px solid rgba(122,240,176,0.16);
+            border-radius: 14px;
+        }
+        [data-testid="stSidebar"] .stTextInput input::placeholder {
+            color: #9fb5c9;
+        }
+        [data-testid="stSidebar"] .stTextInput input:focus,
+        [data-testid="stSidebar"] [data-baseweb="input"]:focus-within {
+            border-color: rgba(126,255,197,0.34);
+            box-shadow: 0 0 0 1px rgba(126,255,197,0.10), 0 0 18px rgba(0,255,170,0.10);
+        }
+        .sidebar-form-box {
+            padding: 1rem;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+            border: 1px solid rgba(122,240,176,0.18);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 24px rgba(0,255,170,0.06);
+            margin-bottom: 1rem;
+        }
+        .form-header {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(90deg,#ffffff 0%,#7af0b0 45%,#8ee7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .login-note {
+            padding: 0.75rem 0;
+            color: #d8e4f3;
+            font-size: 0.95rem;
+        }
+        [data-testid="stSidebar"] form {
+            position: relative;
+            padding: 1.2rem 1rem 1rem 1rem;
+            border-radius: 22px;
+            background:
+                radial-gradient(circle at top left, rgba(122,240,176,0.10), transparent 34%),
+                radial-gradient(circle at top right, rgba(94,200,255,0.10), transparent 30%),
+                linear-gradient(180deg, rgba(7,20,38,0.92), rgba(4,14,28,0.94));
+            border: 1px solid rgba(122,240,176,0.10);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 12px 28px rgba(0,0,0,0.24), 0 0 22px rgba(0,255,170,0.05);
+            overflow: hidden;
+        }
+        [data-testid="stSidebar"] form::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent 24%, transparent 76%, rgba(122,240,176,0.03));
+        }
+        [data-testid="stSidebar"] form .stTextInput,
+        [data-testid="stSidebar"] form .stFormSubmitButton {
+            position: relative;
+            z-index: 1;
+        }
+        [data-testid="stSidebar"] .stTextInput {
+            padding: 0.22rem 0.2rem 0.35rem 0.2rem;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.015));
+            border: 1px solid rgba(122,240,176,0.06);
+        }
+        [data-testid="stSidebar"] .stTextInput label {
+            color: #e9f6ff;
+            font-weight: 600;
+            letter-spacing: 0.01rem;
+        }
+        [data-testid="stSidebar"] .stTextInput > div[data-baseweb="input"] {
+            background:
+                linear-gradient(180deg, rgba(244,251,255,0.96), rgba(233,244,249,0.94));
+            border-radius: 16px;
+            border: 1px solid rgba(122,240,176,0.18);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 0 0 1px rgba(122,240,176,0.04);
+        }
+        [data-testid="stSidebar"] .stTextInput > div[data-baseweb="input"]:focus-within {
+            border-color: rgba(122,240,176,0.34);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 0 0 1px rgba(122,240,176,0.08), 0 0 18px rgba(0,255,170,0.12);
+            transform: translateY(-1px);
+        }
+        [data-testid="stSidebar"] .stTextInput input {
+            background: transparent !important;
+            color: #0f172a !important;
+            font-weight: 500;
+        }
+        [data-testid="stSidebar"] .stTextInput input::placeholder {
+            color: #7b91a6 !important;
+        }
+        [data-testid="stSidebar"] .stFileUploader {
+            padding: 0.75rem;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at top left, rgba(122,240,176,0.08), transparent 35%),
+                linear-gradient(180deg, rgba(10,24,43,0.90), rgba(7,18,34,0.94));
+            border: 1px solid rgba(122,240,176,0.14);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 10px 24px rgba(0,0,0,0.20);
+        }
+        [data-testid="stSidebar"] .stFileUploader section {
+            background: linear-gradient(180deg, rgba(244,251,255,0.96), rgba(233,244,249,0.94));
+            border-radius: 16px;
+            border: 1px dashed rgba(122,240,176,0.30);
+        }
         .hero-wrap {margin:0 auto; max-width:900px; padding:2.5rem 1.5rem 0 1.5rem;}
         .top-image {display:flex; justify-content:center; align-items:center; margin-bottom:1.2rem;}
         .top-image img {width:200px; height:200px; object-fit:cover; border-radius:50%; border:3px solid rgba(120,255,182,0.35); box-shadow:0 0 20px rgba(0,255,170,0.18); animation:chefPulse 2.2s linear infinite, chefFloat 2.8s linear infinite; transform-origin:center;}
@@ -382,8 +539,8 @@ def render_auth_sidebar() -> None:
                                 f"Conta criada, mas não foi possível enviar o e-mail de verificação: {e}")
                             st.session_state.auth_mode = "login"
 
-            st.markdown(
-                "<div class='login-note'>Após criar sua conta, clique em <strong>Login</strong> para acessar o sistema.</div>", unsafe_allow_html=True)
+                st.markdown(
+                    "<div class='login-note'>Após criar sua conta, clique em <strong>Login</strong> para acessar o sistema.</div>", unsafe_allow_html=True)
             return
 
         st.markdown('<div class="sidebar-form-box signup-box"><div class="form-header"><span class="form-header-icon">🔐</span> Verificar e-mail</div></div>', unsafe_allow_html=True)
@@ -462,8 +619,19 @@ def render_auth_sidebar() -> None:
 inject_global_style()
 
 if st.query_params.get("recuperar-senha"):
-    from pgs.recuperar_senha import render_recuperar_senha
-    render_recuperar_senha()
+    import pgs.recuperar_senha as recuperar_senha_page
+
+    if hasattr(recuperar_senha_page, "render_recuperar_senha"):
+        recuperar_senha_page.render_recuperar_senha()
+    elif hasattr(recuperar_senha_page, "showRecuperarSenha"):
+        recuperar_senha_page.showRecuperarSenha()
+    elif hasattr(recuperar_senha_page, "main"):
+        recuperar_senha_page.main()
+    else:
+        st.error(
+            "O módulo pgs.recuperar_senha não possui uma função pública compatível: "
+            "render_recuperar_senha, showRecuperarSenha ou main."
+        )
     st.stop()
 
 if not st.session_state.get("authentication_status"):
