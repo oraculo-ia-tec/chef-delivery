@@ -134,8 +134,7 @@ def _do_login(email: str, password: str) -> bool:
     st.session_state.authentication_status = True
     st.session_state.username = usuario.email
     st.session_state.name = usuario.nome
-    st.session_state.primeiro_nome = usuario.nome.split(
-        " ")[0] if usuario.nome else ""
+    st.session_state.primeiro_nome = usuario.nome.split(" ")[0] if usuario.nome else ""
     st.session_state.user_role = usuario.role
     st.session_state.user_id = usuario.id
     return True
@@ -457,10 +456,8 @@ def render_logged_sidebar_top() -> None:
 
 
 def render_sidebar_bottom_actions() -> None:
-    st.sidebar.markdown(
-        "<div class='sidebar-footer-space'></div>", unsafe_allow_html=True)
-    st.sidebar.button("SAIR DO SISTEMA",
-                      use_container_width=True, on_click=do_logout)
+    st.sidebar.markdown("<div class='sidebar-footer-space'></div>", unsafe_allow_html=True)
+    st.sidebar.button("SAIR DO SISTEMA", use_container_width=True, on_click=do_logout)
 
 
 def render_auth_sidebar() -> None:
@@ -474,19 +471,13 @@ def render_auth_sidebar() -> None:
                 st.session_state.auth_mode = "signup"
 
         if st.session_state.auth_mode == "login":
-            st.markdown(
-                '<div class="sidebar-form-box"><div class="form-header"><span class="form-header-icon">🔐</span> Acesso ao sistema</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sidebar-form-box"><div class="form-header"><span class="form-header-icon">🔐</span> Acesso ao sistema</div></div>', unsafe_allow_html=True)
             with st.form("login_form"):
-                st.markdown(
-                    "<div class='form-field-label'>E-mail</div>", unsafe_allow_html=True)
-                login_email = st.text_input(
-                    "E-mail", label_visibility="collapsed", placeholder="Digite seu e-mail")
-                st.markdown(
-                    "<div class='form-field-label'>Senha</div>", unsafe_allow_html=True)
-                login_senha = st.text_input(
-                    "Senha", type="password", label_visibility="collapsed", placeholder="Digite sua senha")
-                login_submit = st.form_submit_button(
-                    "Entrar", use_container_width=True)
+                st.markdown("<div class='form-field-label'>E-mail</div>", unsafe_allow_html=True)
+                login_email = st.text_input("E-mail", label_visibility="collapsed", placeholder="Digite seu e-mail")
+                st.markdown("<div class='form-field-label'>Senha</div>", unsafe_allow_html=True)
+                login_senha = st.text_input("Senha", type="password", label_visibility="collapsed", placeholder="Digite sua senha")
+                login_submit = st.form_submit_button("Entrar", use_container_width=True)
             if st.button("Esqueci minha senha", key="btn_esqueci_senha", use_container_width=True):
                 st.session_state.recuperar_senha_clicked = True
             if st.session_state.recuperar_senha_clicked:
@@ -500,13 +491,11 @@ def render_auth_sidebar() -> None:
                     st.rerun()
                 else:
                     st.error("❌ E-mail ou senha incorretos.")
-            st.markdown(
-                "<div class='login-note'>Faça login para acessar pedidos, dashboard e recursos inteligentes do Chef Delivery.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='login-note'>Faça login para acessar pedidos, dashboard e recursos inteligentes do Chef Delivery.</div>", unsafe_allow_html=True)
             return
 
         st.markdown('<div class="sidebar-form-box signup-box"><div class="form-header"><span class="form-header-icon">📝</span> Criar nova conta</div></div>', unsafe_allow_html=True)
-        foto_signup = st.file_uploader("Foto de perfil", type=[
-                                       "png", "jpg", "jpeg", "webp"], key="signup_foto")
+        foto_signup = st.file_uploader("Foto de perfil", type=["png", "jpg", "jpeg", "webp"], key="signup_foto")
         if foto_signup:
             col_img, col_info = st.columns([1, 2])
             with col_img:
@@ -518,28 +507,17 @@ def render_auth_sidebar() -> None:
 
         if not st.session_state.verificacao_pendente:
             with st.form("signup_form", clear_on_submit=True):
-                st.markdown(
-                    "<div class='form-field-label'>Nome completo</div>", unsafe_allow_html=True)
-                nome_signup = st.text_input(
-                    "Nome completo", label_visibility="collapsed", placeholder="Digite seu nome completo")
-                st.markdown(
-                    "<div class='form-field-label'>E-mail</div>", unsafe_allow_html=True)
-                email_signup = st.text_input(
-                    "E-mail", label_visibility="collapsed", placeholder="Digite seu e-mail")
-                st.markdown(
-                    "<div class='form-field-label'>WhatsApp</div>", unsafe_allow_html=True)
-                whatsapp_signup = st.text_input(
-                    "WhatsApp", label_visibility="collapsed", placeholder="Digite seu WhatsApp")
-                st.markdown(
-                    "<div class='form-field-label'>Senha</div>", unsafe_allow_html=True)
-                senha_signup = st.text_input(
-                    "Senha", type="password", label_visibility="collapsed", placeholder="Crie uma senha")
-                st.markdown(
-                    "<div class='form-field-label'>Confirmar senha</div>", unsafe_allow_html=True)
-                senha_confirm = st.text_input(
-                    "Confirmar senha", type="password", label_visibility="collapsed", placeholder="Repita a senha")
-                submitted = st.form_submit_button(
-                    "Criar conta", use_container_width=True)
+                st.markdown("<div class='form-field-label'>Nome completo</div>", unsafe_allow_html=True)
+                nome_signup = st.text_input("Nome completo", label_visibility="collapsed", placeholder="Digite seu nome completo")
+                st.markdown("<div class='form-field-label'>E-mail</div>", unsafe_allow_html=True)
+                email_signup = st.text_input("E-mail", label_visibility="collapsed", placeholder="Digite seu e-mail")
+                st.markdown("<div class='form-field-label'>WhatsApp</div>", unsafe_allow_html=True)
+                whatsapp_signup = st.text_input("WhatsApp", label_visibility="collapsed", placeholder="Digite seu WhatsApp")
+                st.markdown("<div class='form-field-label'>Senha</div>", unsafe_allow_html=True)
+                senha_signup = st.text_input("Senha", type="password", label_visibility="collapsed", placeholder="Crie uma senha")
+                st.markdown("<div class='form-field-label'>Confirmar senha</div>", unsafe_allow_html=True)
+                senha_confirm = st.text_input("Confirmar senha", type="password", label_visibility="collapsed", placeholder="Repita a senha")
+                submitted = st.form_submit_button("Criar conta", use_container_width=True)
 
             if submitted:
                 if not all([nome_signup, email_signup, whatsapp_signup, senha_signup, senha_confirm]):
@@ -558,8 +536,7 @@ def render_auth_sidebar() -> None:
                         img_filename = None
                         if foto_signup:
                             ext = foto_signup.name.rsplit(".", 1)[-1]
-                            img_filename = save_profile_image(
-                                email_signup, foto_signup.getvalue(), f".{ext}")
+                            img_filename = save_profile_image(email_signup, foto_signup.getvalue(), f".{ext}")
                         session = await _db_session()
                         try:
                             usuario = await register_usuario(
@@ -611,30 +588,23 @@ def render_auth_sidebar() -> None:
                             st.session_state.show_email_dialog = True
                             st.rerun()
                         except Exception as e:
-                            st.warning(
-                                f"Conta criada, mas não foi possível enviar o e-mail de verificação: {e}")
+                            st.warning(f"Conta criada, mas não foi possível enviar o e-mail de verificação: {e}")
                             st.session_state.auth_mode = "login"
 
-                st.markdown(
-                    "<div class='login-note'>Após criar sua conta, clique em <strong>Login</strong> para acessar o sistema.</div>", unsafe_allow_html=True)
+                st.markdown("<div class='login-note'>Após criar sua conta, clique em <strong>Login</strong> para acessar o sistema.</div>", unsafe_allow_html=True)
             return
 
         st.markdown('<div class="sidebar-form-box signup-box"><div class="form-header"><span class="form-header-icon">🔐</span> Verificar e-mail</div></div>', unsafe_allow_html=True)
-        st.info(
-            f"📧 Código enviado para **{st.session_state.email_verificacao}**")
+        st.info(f"📧 Código enviado para **{st.session_state.email_verificacao}**")
 
         with st.form("verify_form"):
-            st.markdown(
-                "<div class='form-field-label'>Código de verificação</div>", unsafe_allow_html=True)
-            codigo_input = st.text_input(
-                "Digite o código de 6 dígitos", max_chars=6, placeholder="000000", label_visibility="collapsed")
+            st.markdown("<div class='form-field-label'>Código de verificação</div>", unsafe_allow_html=True)
+            codigo_input = st.text_input("Digite o código de 6 dígitos", max_chars=6, placeholder="000000", label_visibility="collapsed")
             col_v1, col_v2 = st.columns(2)
             with col_v1:
-                verificar = st.form_submit_button(
-                    "✅ Verificar", use_container_width=True)
+                verificar = st.form_submit_button("✅ Verificar", use_container_width=True)
             with col_v2:
-                cancelar = st.form_submit_button(
-                    "❌ Cancelar", use_container_width=True)
+                cancelar = st.form_submit_button("❌ Cancelar", use_container_width=True)
 
         if verificar:
             if codigo_input == st.session_state.codigo_verificacao:
@@ -676,8 +646,7 @@ def render_auth_sidebar() -> None:
                         st.session_state.authentication_status = True
                         st.session_state.username = user.email
                         st.session_state.name = user.nome
-                        st.session_state.primeiro_nome = user.nome.split(
-                            " ")[0] if user.nome else ""
+                        st.session_state.primeiro_nome = user.nome.split(" ")[0] if user.nome else ""
                         st.session_state.user_role = user.role
                         st.session_state.user_id = user.id
                         st.session_state.auth_mode = "login"
@@ -696,13 +665,10 @@ def render_auth_sidebar() -> None:
 
 def render_password_recovery_page() -> None:
     st.markdown("<div class='recover-page'>", unsafe_allow_html=True)
-    st.markdown("<div class='recover-title'>Recuperação de Senha</div>",
-                unsafe_allow_html=True)
+    st.markdown("<div class='recover-title'>Recuperação de Senha</div>", unsafe_allow_html=True)
     st.markdown("<div class='recover-subtitle'>Informe seu e-mail cadastrado para gerar uma nova senha e receber as instruções por e-mail.</div>", unsafe_allow_html=True)
-    st.markdown("<div class='form-field-label'>E-mail cadastrado</div>",
-                unsafe_allow_html=True)
-    email = st.text_input("Digite seu e-mail cadastrado",
-                          label_visibility="collapsed", placeholder="Digite seu e-mail")
+    st.markdown("<div class='form-field-label'>E-mail cadastrado</div>", unsafe_allow_html=True)
+    email = st.text_input("Digite seu e-mail cadastrado", label_visibility="collapsed", placeholder="Digite seu e-mail")
 
     if st.button("Recuperar Senha", use_container_width=False):
         if not email:
@@ -724,8 +690,7 @@ def render_password_recovery_page() -> None:
                     await usuario_repo.update_usuario(session, user.id, senha=nova_senha)
                     notificador = Notificador()
                     if hasattr(notificador, "enviar_email_recuperacao"):
-                        notificador.enviar_email_recuperacao(
-                            email, user.nome, nova_senha)
+                        notificador.enviar_email_recuperacao(email, user.nome, nova_senha)
                     else:
                         notificador.enviar_email(
                             destino=email,
