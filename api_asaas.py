@@ -305,13 +305,15 @@ class AsaasClient:
         content_type = response.headers.get("content-type", "")
 
         try:
-            data = response.json() if "application/json" in content_type else {"raw": response.text}
+            data = response.json(
+            ) if "application/json" in content_type else {"raw": response.text}
         except ValueError:
             data = {"raw": response.text}
 
         if response.is_error:
             details = data.get("errors") if isinstance(data, dict) else None
-            message = self._extract_error_message(data) or f"Erro HTTP {response.status_code} ao acessar Asaas"
+            message = self._extract_error_message(
+                data) or f"Erro HTTP {response.status_code} ao acessar Asaas"
             raise AsaasError(
                 message,
                 status_code=response.status_code,
@@ -423,15 +425,18 @@ class AsaasClient:
 
     async def create_credit_card_payment_redirect(self, payload: PaymentCreateInput) -> CheckoutPaymentResponse:
         if payload.billing_type != "CREDIT_CARD":
-            raise ValueError("create_credit_card_payment_redirect exige billing_type='CREDIT_CARD'")
+            raise ValueError(
+                "create_credit_card_payment_redirect exige billing_type='CREDIT_CARD'")
         data = await self.create_payment(payload)
         return CheckoutPaymentResponse.from_api(data)
 
     async def create_credit_card_payment_direct(self, payload: PaymentCreateInput) -> CheckoutPaymentResponse:
         if payload.billing_type != "CREDIT_CARD":
-            raise ValueError("create_credit_card_payment_direct exige billing_type='CREDIT_CARD'")
+            raise ValueError(
+                "create_credit_card_payment_direct exige billing_type='CREDIT_CARD'")
         if not payload.credit_card or not payload.credit_card_holder_info or not payload.remote_ip:
-            raise ValueError("Pagamento direto em cartão exige credit_card, credit_card_holder_info e remote_ip")
+            raise ValueError(
+                "Pagamento direto em cartão exige credit_card, credit_card_holder_info e remote_ip")
         data = await self.create_payment(payload, timeout=max(self.config.timeout, 60.0))
         return CheckoutPaymentResponse.from_api(data)
 
@@ -588,7 +593,8 @@ class ChefDeliveryAsaasService:
                 raw=asdict(result),
             )
 
-        raise ValueError(f"Método de pagamento não suportado: {order.payment_method}")
+        raise ValueError(
+            f"Método de pagamento não suportado: {order.payment_method}")
 
     async def get_order_payment_status(self, payment_id: str) -> dict[str, Any]:
         payment = await self.client.get_payment(payment_id)
@@ -643,7 +649,8 @@ class ChefDeliveryAsaasService:
 
 def build_order_from_session_state(session_state: Any, *, due_date: str, order_id: str, total_value: Decimal | float | str, payment_method: PaymentMethod = "pix", email: str | None = None, cpf_cnpj: str | None = None, postal_code: str | None = None, address_number: str | None = None, province: str | None = None, remote_ip: str | None = None) -> ChefOrderData:
     customer = ChefCustomerData(
-        name=session_state.get("name") or session_state.get("primeiro_nome") or "Cliente Chef Delivery",
+        name=session_state.get("name") or session_state.get(
+            "primeiro_nome") or "Cliente Chef Delivery",
         email=email,
         cpf_cnpj=cpf_cnpj,
         phone=session_state.get("whatsapp"),
@@ -655,7 +662,8 @@ def build_order_from_session_state(session_state: Any, *, due_date: str, order_i
         external_reference=str(session_state.get("username") or order_id),
         observations=session_state.get("observacao"),
     )
-    description = session_state.get("pedido_texto") or session_state.get("pedido") or "Pedido Chef Delivery"
+    description = session_state.get("pedido_texto") or session_state.get(
+        "pedido") or "Pedido Chef Delivery"
     if isinstance(description, list):
         description = ", ".join(map(str, description))
     return ChefOrderData(
@@ -710,8 +718,10 @@ async def streamlit_payment_flow_example(session_state: Any, *, api_key: str, en
 def handle_asaas_webhook_payload(payload: dict[str, Any]) -> dict[str, Any]:
     parsed = ChefDeliveryAsaasService.parse_webhook_event(payload)
     event_name = parsed.get("event") or ""
-    parsed["mark_as_paid"] = ChefDeliveryAsaasService.should_mark_order_paid(event_name)
-    parsed["mark_as_failed"] = ChefDeliveryAsaasService.should_mark_order_failed(event_name)
+    parsed["mark_as_paid"] = ChefDeliveryAsaasService.should_mark_order_paid(
+        event_name)
+    parsed["mark_as_failed"] = ChefDeliveryAsaasService.should_mark_order_failed(
+        event_name)
     return parsed
 
 

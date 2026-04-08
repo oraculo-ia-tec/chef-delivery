@@ -11,7 +11,7 @@ from api_asaas import (
     CustomerCreateInput,
     PaymentCreateInput,
 )
-from configuracao import ASAAS_API_KEY, ASAAS_ENVIRONMENT
+from config import ASAAS_API_KEY, ASAAS_ENVIRONMENT
 
 
 # ─────────────────────────────────────────────
