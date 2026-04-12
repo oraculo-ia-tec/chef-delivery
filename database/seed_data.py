@@ -16,6 +16,30 @@ from database.repositories.produto_repo import (
     create_produto,
     get_categoria_by_nome,
 )
+from database.repositories import usuario_repo
+from database.services.auth_service import hash_password
+
+
+# ── Usuários padrão do sistema ─────────────────────────────
+
+USUARIOS_SEED: list[dict] = [
+    {
+        "nome": "William Eustáquio Gomes da Silva",
+        "email": "oraculoiatec@gmail.com",
+        "whatsapp": "998417976",
+        "senha": "william2026",
+        "role": "admin",
+        "email_verificado": True,
+    },
+    {
+        "nome": "Admin Chef",
+        "email": "admin@chef.com",
+        "whatsapp": "31999990000",
+        "senha": "Chef@2025",
+        "role": "admin",
+        "email_verificado": True,
+    },
+]
 
 
 # ── Catálogo completo do Chef Delivery ─────────────────────
@@ -137,9 +161,41 @@ CATEGORIAS_SEED: dict[str, dict] = {
 }
 
 
+async def seed_usuarios():
+    """Cria usuários padrão se não existirem."""
+    session = await create_session()
+    try:
+        total_usuarios = 0
+        for user_data in USUARIOS_SEED:
+            existing = await usuario_repo.get_usuario_by_email(session, user_data["email"])
+            if existing:
+                print(f"  ⏭️  Usuário '{user_data['email']}' já existe (id={existing.id})")
+            else:
+                senha_hash = hash_password(user_data["senha"])
+                novo_user = await usuario_repo.create_usuario(
+                    session,
+                    nome=user_data["nome"],
+                    email=user_data["email"],
+                    whatsapp=user_data["whatsapp"],
+                    senha_hash=senha_hash,
+                    role=user_data["role"],
+                )
+                if user_data.get("email_verificado"):
+                    await usuario_repo.update_usuario(session, novo_user.id, email_verificado=True)
+                total_usuarios += 1
+                print(f"  ✅ Usuário '{user_data['email']}' criado (id={novo_user.id})")
+        return total_usuarios
+    finally:
+        await session.close()
+
+
 async def seed_all():
-    """Cria tabelas (se necessário) e popula categorias + produtos."""
+    """Cria tabelas (se necessário) e popula categorias + produtos + usuários."""
     await create_tables()
+    
+    # Seed de usuários primeiro
+    print("\n👤 Criando usuários padrão...")
+    total_usuarios = await seed_usuarios()
 
     session = await create_session()
     try:
@@ -179,7 +235,7 @@ async def seed_all():
                     await session.rollback()
                     session = await create_session()
 
-        print(f"\n📊 Seed concluído: {total_categorias} categorias, "
+        print(f"\n📊 Seed concluído: {total_usuarios} usuários, {total_categorias} categorias, "
               f"{total_produtos} produtos inseridos.")
     finally:
         await session.close()

@@ -13,20 +13,13 @@ try:
 except Exception:
     THEME_BASE = "dark"
 
-if os.environ.get("STREAMLIT_CLOUD") or os.environ.get("IS_STREAMLIT_CLOUD"):
-    try:
-        from database.config.connection import create_tables
-        asyncio.run(create_tables())
-        print("Tabelas criadas/verificadas automaticamente para Streamlit Cloud.")
-    except Exception as e:
-        print(f"Erro ao criar tabelas no Streamlit Cloud: {e}")
-else:
-    try:
-        from database.config.connection import create_tables
-        asyncio.run(create_tables())
-        print("Tabelas criadas/verificadas automaticamente no startup.")
-    except Exception as e:
-        print(f"Erro ao criar/verificar tabelas no startup: {e}")
+# Inicializa banco de dados com seed (cria tabelas e usuários padrão)
+try:
+    from database.seed_data import seed_all
+    asyncio.run(seed_all())
+    print("Banco de dados inicializado com seed.")
+except Exception as e:
+    print(f"Erro ao executar seed: {e}")
 
 load_dotenv()
 
