@@ -1020,7 +1020,13 @@ else:
     from database.services.profile_image_service import get_profile_image_path
     profile_img_path = get_profile_image_path(user_profile_image) if user_profile_image else None
     
-    if profile_img_path:
+    # Se não tem foto de perfil, usa imagem padrão
+    if not profile_img_path:
+        default_img_path = "./src/img/cliente.png"
+        if os.path.exists(default_img_path):
+            profile_img_path = default_img_path
+    
+    if profile_img_path and os.path.exists(profile_img_path):
         st.sidebar.markdown(
             f"""
             <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1rem;padding-top:0.5rem;">

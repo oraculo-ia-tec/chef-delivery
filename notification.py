@@ -23,11 +23,13 @@ from config import (
 
 def _get_chef_image_base64() -> str:
     """Retorna a imagem do Chef em base64 para uso em emails."""
-    # Tenta diferentes caminhos possíveis
+    # Tenta diferentes caminhos possíveis para a imagem do Chef
+    current_dir = os.path.dirname(os.path.abspath(__file__))
     possible_paths = [
+        os.path.join(current_dir, "src", "img", "perfil-chat1.png"),
         "src/img/perfil-chat1.png",
         "./src/img/perfil-chat1.png",
-        os.path.join(os.path.dirname(__file__), "src", "img", "perfil-chat1.png"),
+        "/mount/src/chef-delivery/src/img/perfil-chat1.png",  # Streamlit Cloud
     ]
     
     for path in possible_paths:
@@ -38,24 +40,21 @@ def _get_chef_image_base64() -> str:
             except Exception:
                 continue
     
-    # Se não encontrar, retorna uma imagem placeholder SVG em base64
-    placeholder_svg = '''<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="58" fill="url(#grad)" stroke="#7af0b0" stroke-width="3"/>
-        <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1"/>
-            <stop offset="100%" style="stop-color:#16213e;stop-opacity:1"/>
-        </linearGradient></defs>
-        <text x="60" y="70" font-size="40" text-anchor="middle" fill="#7af0b0">🍔</text>
-    </svg>'''
-    return base64.b64encode(placeholder_svg.encode()).decode()
+    # Fallback: retorna vazio se não encontrar (imagem não aparecerá)
+    return ""
 
 
 def _get_profile_image_base64(imagem_perfil: str = None) -> str:
     """Retorna a imagem de perfil do usuário em base64."""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Se tem imagem de perfil específica, tenta carregar
     if imagem_perfil:
         possible_paths = [
+            os.path.join(current_dir, "src", "img", "profiles", imagem_perfil),
             f"src/img/profiles/{imagem_perfil}",
             f"./src/img/profiles/{imagem_perfil}",
+            f"/mount/src/chef-delivery/src/img/profiles/{imagem_perfil}",
         ]
         for path in possible_paths:
             if os.path.exists(path):
@@ -65,16 +64,22 @@ def _get_profile_image_base64(imagem_perfil: str = None) -> str:
                 except Exception:
                     continue
     
-    # Avatar padrão em SVG
-    default_avatar = '''<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="url(#avatar_grad)" stroke="#7af0b0" stroke-width="2"/>
-        <defs><linearGradient id="avatar_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:rgba(122,240,176,0.3)"/>
-            <stop offset="100%" style="stop-color:rgba(94,200,255,0.3)"/>
-        </linearGradient></defs>
-        <text x="40" y="50" font-size="28" text-anchor="middle" fill="#7af0b0">👤</text>
-    </svg>'''
-    return base64.b64encode(default_avatar.encode()).decode()
+    # Usa imagem padrão do cliente
+    default_paths = [
+        os.path.join(current_dir, "src", "img", "cliente.png"),
+        "src/img/cliente.png",
+        "./src/img/cliente.png",
+        "/mount/src/chef-delivery/src/img/cliente.png",
+    ]
+    for path in default_paths:
+        if os.path.exists(path):
+            try:
+                with open(path, "rb") as f:
+                    return base64.b64encode(f.read()).decode()
+            except Exception:
+                continue
+    
+    return ""
 
 
 def _email_base_template(content: str) -> str:

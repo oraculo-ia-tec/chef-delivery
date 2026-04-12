@@ -369,15 +369,22 @@ def showPedido():
 
     # Determina o avatar do usuário (foto de perfil ou imagem padrão)
     from database.services.profile_image_service import get_profile_image_path
+    import os as _os
+    
     user_profile_img = st.session_state.get("user_profile_image", "")
     user_avatar = "./src/img/cliente.png"
+    
     if user_profile_img:
         profile_path = get_profile_image_path(user_profile_img)
-        if profile_path:
+        if profile_path and _os.path.exists(profile_path):
             user_avatar = profile_path
+    
+    # Verifica se a imagem padrão existe
+    if not _os.path.exists(user_avatar):
+        user_avatar = None  # Streamlit usará avatar padrão
 
     icons = {
-        "assistant": "./src/img/perfil-chat1.png",
+        "assistant": "./src/img/perfil-chat1.png" if _os.path.exists("./src/img/perfil-chat1.png") else None,
         "user": user_avatar,
     }
 
