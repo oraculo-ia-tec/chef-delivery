@@ -1,10 +1,22 @@
 import os
+import uuid
 import base64
+import asyncio
 from pathlib import Path
+from datetime import date, timedelta
 
 import streamlit as st
 from dotenv import load_dotenv
 from groq import Groq
+
+from api_asaas import (
+    AsaasConfig,
+    AsaasError,
+    ChefDeliveryAsaasService,
+    build_asaas_client,
+    create_payment_from_streamlit_session,
+)
+from services.flow_manager import ChefDeliveryFlowManager
 
 load_dotenv()
 
@@ -24,6 +36,17 @@ GROQ_API_KEY = (
     or _get_secret("api_keys.GROQ_API_KEY")
     or os.getenv("GROQ_API_KEY", "")
 )
+
+ASAAS_API_KEY = (
+    _get_secret("asaas.ASAAS_API_KEY")
+    or _get_secret("api_keys.ASAAS_API_KEY")
+    or os.getenv("ASAAS_API_KEY", "")
+)
+
+ASAAS_ENVIRONMENT = (
+    _get_secret("asaas.ASAAS_ENVIRONMENT")
+    or os.getenv("ASAAS_ENVIRONMENT", "sandbox")
+).lower()
 
 
 @st.cache_resource(show_spinner=False)
@@ -61,6 +84,9 @@ def inicializar_session_state():
         "total_value",
         "pedido_texto",
         "messages",
+        "username",
+        "email",
+        "asaas_payment_result",
     ]
     for campo in campos:
         if campo not in st.session_state:
@@ -70,6 +96,8 @@ def inicializar_session_state():
                 st.session_state[campo] = 0.0
             elif campo == "messages":
                 st.session_state[campo] = []
+            elif campo == "asaas_payment_result":
+                st.session_state[campo] = None
             else:
                 st.session_state[campo] = ""
 
@@ -97,6 +125,8 @@ Regras:
 - Se houver produtos parecidos, pergunte qual exatamente o cliente quer.
 - Mantenha respostas objetivas.
 - O atendimento deve soar humano, cordial e comercial.
+- Se o cliente já escolheu um produto, direcione para definir quantidade.
+- Se o cliente quiser finalizar, oriente para confirmação do total e pagamento.
 
 Alguns itens e preços:
 - Picanha premiata custa R$ 79,99 por kg.
@@ -135,8 +165,41 @@ def clear_chat_history():
     mensagem_inicial = (
         f"Olá, {primeiro_nome}! Sou o Chef Delivery, digite abaixo o que você deseja comprar hoje?"
     )
+
+    preserve_keys = {
+        "name": st.session_state.get("name", ""),
+        "primeiro_nome": st.session_state.get("primeiro_nome", ""),
+        "endereco": st.session_state.get("endereco", ""),
+        "whatsapp": st.session_state.get("whatsapp", ""),
+        "username": st.session_state.get("username", ""),
+        "email": st.session_state.get("email", ""),
+    }
+
+    keys_to_clear = [
+        "messages",
+        "pedido",
+        "observacao",
+        "total_value",
+        "pedido_texto",
+        "flow_state",
+        "cart",
+        "current_group",
+        "current_category",
+        "current_product",
+        "checkout_ready",
+        "payment_data",
+        "asaas_payment_result",
+    ]
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+
+    for key, value in preserve_keys.items():
+        st.session_state[key] = value
+
     st.session_state.messages = [
-        {"role": "assistant", "content": mensagem_inicial}]
+        {"role": "assistant", "content": mensagem_inicial}
+    ]
 
 
 def apply_chat_styles():
@@ -173,9 +236,116 @@ def apply_chat_styles():
     )
 
 
+def _sync_order_state_from_cart():
+    cart = st.session_state.get("cart", [])
+    st.session_state.pedido = [
+        f"{item['nome']} ({item['quantidade']} {item['unidade']})"
+        for item in cart
+    ]
+    st.session_state.pedido_texto = ", ".join(st.session_state.pedido)
+    st.session_state.total_value = round(
+        sum(item["subtotal"] for item in cart), 2
+    )
+
+
+async def _create_pix_payment_async():
+    if not ASAAS_API_KEY:
+        raise AsaasError("ASAAS_API_KEY não configurada.")
+
+    total_value = st.session_state.get("total_value", 0.0)
+    if not total_value or total_value <= 0:
+        raise AsaasError("O valor total do pedido está vazio ou inválido.")
+
+    order_id = f"CHEF-{uuid.uuid4().hex[:10].upper()}"
+    due_date = (date.today() + timedelta(days=1)).isoformat()
+
+    client = await build_asaas_client(
+        ASAAS_API_KEY,
+        environment="production" if ASAAS_ENVIRONMENT == "production" else "sandbox",
+    )
+
+    async with client:
+        service = ChefDeliveryAsaasService(client)
+        result = await create_payment_from_streamlit_session(
+            service,
+            st.session_state,
+            due_date=due_date,
+            order_id=order_id,
+            total_value=total_value,
+            payment_method="pix",
+            email=st.session_state.get("email") or None,
+        )
+        return result
+
+
+def _render_pix_payment_block():
+    payment_data = st.session_state.get("payment_data")
+    flow_state = st.session_state.get("flow_state")
+
+    if flow_state != "aguardando_pagamento":
+        return
+
+    if not payment_data or payment_data.get("billing_type") != "PIX":
+        return
+
+    _sync_order_state_from_cart()
+    total = st.session_state.get("total_value", 0.0)
+
+    st.markdown("### Pagamento PIX")
+    st.write(f"Total do pedido: **R$ {total:.2f}**")
+
+    if not ASAAS_API_KEY:
+        st.error(
+            "A chave ASAAS_API_KEY não foi encontrada. Verifique o .env ou o secrets.toml.")
+        return
+
+    if st.button("Gerar PIX", type="primary", use_container_width=True, key="gerar_pix_asaas"):
+        try:
+            result = asyncio.run(_create_pix_payment_async())
+            st.session_state.asaas_payment_result = result
+            st.session_state.flow_state = "pedido_finalizado"
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": "Seu PIX foi gerado com sucesso. Abaixo está o QR Code e o código copia e cola para pagamento."
+                }
+            )
+            st.rerun()
+        except AsaasError as e:
+            st.error(f"Erro Asaas: {e}")
+        except Exception as e:
+            st.error(f"Erro inesperado ao gerar PIX: {e}")
+
+
+def _render_payment_result():
+    result = st.session_state.get("asaas_payment_result")
+    if not result:
+        return
+
+    st.markdown("### PIX gerado")
+    if result.get("value") is not None:
+        st.write(f"Valor: **R$ {float(result['value']):.2f}**")
+
+    if result.get("pix_qr_code_base64"):
+        st.image(f"data:image/png;base64,{result['pix_qr_code_base64']}")
+
+    if result.get("pix_payload"):
+        st.caption("Código PIX copia e cola")
+        st.code(result["pix_payload"], language="text")
+
+    if result.get("pix_expiration_date"):
+        st.caption(f"Expiração: {result['pix_expiration_date']}")
+
+    if result.get("payment_id"):
+        st.caption(f"Payment ID: {result['payment_id']}")
+
+
 def showPedido():
     apply_chat_styles()
     inicializar_session_state()
+
+    flow = ChefDeliveryFlowManager()
+    flow.init_state()
 
     primeiro_nome = (
         st.session_state.primeiro_nome
@@ -192,18 +362,33 @@ def showPedido():
             f"Olá, {primeiro_nome}! Sou o Chef Delivery, digite abaixo o que você deseja comprar hoje?"
         )
         st.session_state.messages = [
-            {"role": "assistant", "content": mensagem_inicial}]
+            {"role": "assistant", "content": mensagem_inicial}
+        ]
 
     system_prompt = build_system_prompt(primeiro_nome)
 
+    # Determina o avatar do usuário (foto de perfil ou imagem padrão)
+    from database.services.profile_image_service import get_profile_image_path
+    user_profile_img = st.session_state.get("user_profile_image", "")
+    user_avatar = "./src/img/cliente.png"
+    if user_profile_img:
+        profile_path = get_profile_image_path(user_profile_img)
+        if profile_path:
+            user_avatar = profile_path
+
     icons = {
         "assistant": "./src/img/perfil-chat1.png",
-        "user": "./src/img/cliente.png",
+        "user": user_avatar,
     }
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"], avatar=icons.get(message["role"])):
             st.write(message["content"])
+
+    flow.render_quantity_widget()
+    flow.render_order_summary()
+    _render_pix_payment_block()
+    _render_payment_result()
 
     if not GROQ_API_KEY:
         st.warning(
@@ -242,23 +427,10 @@ def showPedido():
 
     prompt = st.chat_input("Digite sua mensagem")
 
-    st.divider()
-
-    st.markdown("<div class='chat-bottom-actions'>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 1.3, 1])
-    with col2:
-        st.button(
-            "LIMPAR CONVERSA",
-            on_click=clear_chat_history,
-            use_container_width=True,
-            key="btn_limpar_conversa_chat",
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
-
     if prompt:
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar=icons["user"]):
-            st.write(prompt)
+        flow.handle_user_message(prompt)
+        _sync_order_state_from_cart()
+        st.rerun()
 
     if st.session_state.messages and st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant", avatar=icons["assistant"]):

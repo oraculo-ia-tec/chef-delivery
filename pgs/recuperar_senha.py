@@ -5,6 +5,7 @@ import streamlit as st
 
 from database import create_session
 from database.repositories import usuario_repo
+from database.services.auth_service import hash_password
 from notification import Notificador
 
 
@@ -97,7 +98,8 @@ def render_recuperar_senha() -> None:
                         st.error("E-mail não encontrado.")
                         return
                     nova_senha = secrets.token_urlsafe(8)
-                    await usuario_repo.update_usuario(session, user.id, senha=nova_senha)
+                    senha_hash = hash_password(nova_senha)
+                    await usuario_repo.update_usuario(session, user.id, senha_hash=senha_hash)
                     notificador = Notificador()
                     if hasattr(notificador, "enviar_email_recuperacao"):
                         notificador.enviar_email_recuperacao(email, user.nome, nova_senha)

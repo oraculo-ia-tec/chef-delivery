@@ -94,6 +94,7 @@ def _do_login(email: str, password: str) -> bool:
         " ")[0] if usuario.nome else ""
     st.session_state.user_role = usuario.role
     st.session_state.user_id = usuario.id
+    st.session_state.user_profile_image = usuario.imagem_perfil
     return True
 
 
@@ -118,7 +119,6 @@ def do_logout():
     st.session_state.name = ""
     st.session_state.primeiro_nome = ""
     st.session_state.user_id = None
-    st.rerun()
 
 
 def inject_global_style() -> None:
@@ -817,13 +817,7 @@ def render_auth_sidebar() -> None:
         )
 
         if foto_signup:
-            col_img, col_info = st.columns([1, 2])
-            with col_img:
-                st.image(foto_signup, width=80)
-            with col_info:
-                st.caption(f"📎 {foto_signup.name}")
-                size_kb = len(foto_signup.getvalue()) / 1024
-                st.caption(f"📐 {size_kb:.0f} KB")
+            st.image(foto_signup, caption="Pré-visualização", width=100)
 
         if not st.session_state.verificacao_pendente:
             with st.form("signup_form", clear_on_submit=True):
@@ -1017,12 +1011,35 @@ if not st.session_state.get("authentication_status"):
 else:
     user_name = st.session_state.get("name", "")
     user_role = st.session_state.get("user_role", "cliente")
+    user_profile_image = st.session_state.get("user_profile_image", "")
 
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(
-        f"<div class='login-note'>✅ Usuário conectado: <strong>{user_name}</strong></div>",
-        unsafe_allow_html=True,
-    )
+    # Exibe foto de perfil do usuário no topo do sidebar
+    from database.services.profile_image_service import get_profile_image_path
+    profile_img_path = get_profile_image_path(user_profile_image) if user_profile_image else None
+    
+    if profile_img_path:
+        st.sidebar.markdown(
+            f"""
+            <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1rem;padding-top:0.5rem;">
+                <img src="data:image/png;base64,{__import__('base64').b64encode(open(profile_img_path, 'rb').read()).decode()}" 
+                     style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(122,240,176,0.4);box-shadow:0 0 16px rgba(0,255,170,0.2);" />
+                <div style="color:#e8f6ff;font-size:0.95rem;margin-top:0.5rem;font-weight:600;text-align:center;">{user_name.split(' ')[0]}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.sidebar.markdown(
+            f"""
+            <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1rem;padding-top:0.5rem;">
+                <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(122,240,176,0.3),rgba(94,200,255,0.3));display:flex;align-items:center;justify-content:center;font-size:2rem;border:2px solid rgba(122,240,176,0.4);box-shadow:0 0 16px rgba(0,255,170,0.2);">
+                    👤
+                </div>
+                <div style="color:#e8f6ff;font-size:0.95rem;margin-top:0.5rem;font-weight:600;text-align:center;">{user_name.split(' ')[0]}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     mp = MultiPage()
 
@@ -1059,11 +1076,34 @@ else:
         mp.add_page("Parceiros", showParceiros, "handshake")
         mp.add_page("Configuração", showConfiguracao, "sliders")
 
+    def clear_chat():
+        """Limpa o histórico de mensagens do chat."""
+        primeiro_nome = (
+            st.session_state.primeiro_nome
+            if st.session_state.get("primeiro_nome")
+            else "Cliente"
+        )
+        mensagem_inicial = (
+            f"Olá, {primeiro_nome}! Sou o Chef Delivery, digite abaixo o que você deseja comprar hoje?"
+        )
+        keys_to_clear = [
+            "messages", "pedido", "observacao", "total_value", "pedido_texto",
+            "flow_state", "cart", "current_group", "current_category",
+            "current_product", "checkout_ready", "payment_data", "asaas_payment_result",
+        ]
+        for key in keys_to_clear:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.session_state.messages = [{"role": "assistant", "content": mensagem_inicial}]
+
     if mp.pages:
         mp.run()
         st.sidebar.markdown(
             "<div style='height:1rem'></div>", unsafe_allow_html=True)
-        st.sidebar.button("SAIR DO SISTEMA",
-                          use_container_width=True, on_click=do_logout)
+        col_limpar, col_sair = st.sidebar.columns(2)
+        with col_limpar:
+            st.button("🗑️ LIMPAR", use_container_width=True, on_click=clear_chat, key="btn_limpar_sidebar")
+        with col_sair:
+            st.button("🚪 SAIR", use_container_width=True, on_click=do_logout, key="btn_sair_sidebar")
     else:
         st.warning("Nenhuma página disponível para seu perfil.")
