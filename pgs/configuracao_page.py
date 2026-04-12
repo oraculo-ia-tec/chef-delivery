@@ -98,19 +98,90 @@ def showConfiguracao():
         )
 
         with tab_u_listar:
-            if db_users:
-                for user in db_users:
-                    role_icon = {"admin": "🔑", "parceiro": "🤝", "cliente": "👤", "entregador": "🏍️", "funcionario": "👷"}.get(user.role, "❔")
+            from database.services.profile_image_service import get_profile_image_path
+            import base64
+            import pandas as pd
+            
+            # Sub-tabs por tipo de usuário
+            tab_clientes, tab_parceiros, tab_entregadores, tab_admins, tab_funcionarios = st.tabs(
+                ["👤 Clientes", "🤝 Parceiros", "🏍️ Entregadores", "🔑 Admins", "👷 Funcionários"]
+            )
+            
+            def get_user_image_html(user):
+                """Retorna HTML da imagem de perfil ou imagem padrão."""
+                if user.imagem_perfil:
+                    img_path = get_profile_image_path(user.imagem_perfil)
+                    if img_path and os.path.exists(img_path):
+                        with open(img_path, "rb") as f:
+                            img_b64 = base64.b64encode(f.read()).decode()
+                        return f'<img src="data:image/png;base64,{img_b64}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">'
+                # Imagem padrão
+                return '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,rgba(122,240,176,0.3),rgba(94,200,255,0.3));display:flex;align-items:center;justify-content:center;font-size:1.2rem;">👤</div>'
+            
+            def render_users_table(users_list, role_name):
+                """Renderiza tabela de usuários com st.dataframe."""
+                if not users_list:
+                    st.info(f"Nenhum {role_name} cadastrado.")
+                    return
+                
+                # Cria dados para a tabela
+                data = []
+                for user in users_list:
                     verificado = "✅" if user.email_verificado else "⏳"
+                    ativo = "🟢 Sim" if user.ativo else "🔴 Não"
+                    data.append({
+                        "ID": user.id,
+                        "Nome": user.nome,
+                        "E-mail": user.email,
+                        "WhatsApp": user.whatsapp or "-",
+                        "Verificado": verificado,
+                        "Ativo": ativo,
+                    })
+                
+                df = pd.DataFrame(data)
+                
+                # Exibe cards com imagem + tabela
+                st.markdown(f"**Total: {len(users_list)} {role_name}(s)**")
+                
+                # Lista com imagens
+                for user in users_list:
                     with st.container():
-                        c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
-                        c1.write(f"**{user.nome}**")
-                        c2.write(user.email)
-                        c3.write(f"{role_icon} {user.role}")
-                        c4.write(verificado)
-                    st.markdown("<hr style='margin:0.2rem 0; border-color: rgba(120,255,182,0.08);'>", unsafe_allow_html=True)
-            else:
-                st.warning("Nenhum usuário cadastrado.")
+                        cols = st.columns([0.5, 2, 2, 1.5, 0.8, 0.8])
+                        with cols[0]:
+                            st.markdown(get_user_image_html(user), unsafe_allow_html=True)
+                        with cols[1]:
+                            st.markdown(f"**{user.nome}**")
+                        with cols[2]:
+                            st.caption(user.email)
+                        with cols[3]:
+                            st.caption(user.whatsapp or "-")
+                        with cols[4]:
+                            st.write("✅" if user.email_verificado else "⏳")
+                        with cols[5]:
+                            st.write("🟢" if user.ativo else "🔴")
+                    st.markdown("<hr style='margin:0.2rem 0;border-color:rgba(120,255,182,0.08);'>", unsafe_allow_html=True)
+            
+            # Filtra usuários por role
+            clientes = [u for u in db_users if u.role == "cliente"]
+            parceiros = [u for u in db_users if u.role == "parceiro"]
+            entregadores = [u for u in db_users if u.role == "entregador"]
+            admins = [u for u in db_users if u.role == "admin"]
+            funcionarios = [u for u in db_users if u.role == "funcionario"]
+            
+            with tab_clientes:
+                render_users_table(clientes, "cliente")
+            
+            with tab_parceiros:
+                render_users_table(parceiros, "parceiro")
+            
+            with tab_entregadores:
+                render_users_table(entregadores, "entregador")
+            
+            with tab_admins:
+                render_users_table(admins, "administrador")
+            
+            with tab_funcionarios:
+                render_users_table(funcionarios, "funcionário")
 
         with tab_u_cadastrar:
             st.subheader("➕ Cadastrar Novo Usuário")
