@@ -101,26 +101,7 @@ def render_recuperar_senha() -> None:
                     senha_hash = hash_password(nova_senha)
                     await usuario_repo.update_usuario(session, user.id, senha_hash=senha_hash)
                     notificador = Notificador()
-                    if hasattr(notificador, "enviar_email_recuperacao"):
-                        notificador.enviar_email_recuperacao(email, user.nome, nova_senha)
-                    else:
-                        notificador.enviar_email(
-                            destino=email,
-                            assunto="🔐 Chef Delivery — Recuperação de senha",
-                            mensagem=f"""
-                            <div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:2rem;border-radius:16px;background:linear-gradient(145deg,#1a1a2e,#16213e);color:#e8f4ee;'>
-                                <h2 style='color:#7af0b0;text-align:center;'>🍔 Chef Delivery</h2>
-                                <p>Olá, <strong>{user.nome.split(' ')[0] if user.nome else 'cliente'}</strong>!</p>
-                                <p>Sua nova senha temporária é:</p>
-                                <div style='text-align:center;margin:1.5rem 0;'>
-                                    <span style='font-size:1.5rem;font-weight:700;letter-spacing:2px;color:#7af0b0;background:rgba(122,240,176,0.1);padding:0.8rem 1.2rem;border-radius:12px;border:2px solid rgba(122,240,176,0.3);'>
-                                        {nova_senha}
-                                    </span>
-                                </div>
-                                <p style='font-size:0.9rem;color:#c0d8e8;'>Ao entrar no sistema, altere sua senha imediatamente.</p>
-                            </div>
-                            """,
-                        )
+                    notificador.enviar_email_recuperacao(email, user.nome, nova_senha)
                     st.success("Uma nova senha foi enviada para seu e-mail.")
                 except Exception as e:
                     st.error(f"Erro ao recuperar senha: {e}")

@@ -873,32 +873,42 @@ def render_auth_sidebar() -> None:
                         st.session_state.usuario_id_verificacao = usuario_id
 
                         try:
+                            import threading
+                            import time as _time
+                            
                             notificador = Notificador()
-                            notificador.enviar_email(
+                            
+                            # 1. Envia email de boas-vindas imediatamente
+                            notificador.enviar_email_boas_vindas(
                                 destino=email_signup,
-                                assunto="🔐 Chef Delivery — Código de verificação",
-                                mensagem=f"""
-                                <div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:2rem;border-radius:16px;background:linear-gradient(145deg,#1a1a2e,#16213e);color:#e8f4ee;'>
-                                    <h2 style='color:#7af0b0;text-align:center;'>🍔 Chef Delivery</h2>
-                                    <p>Olá, <strong>{nome_signup.split(' ')[0]}</strong>!</p>
-                                    <p>Seu código de verificação é:</p>
-                                    <div style='text-align:center;margin:1.5rem 0;'>
-                                        <span style='font-size:2rem;font-weight:700;letter-spacing:8px;color:#7af0b0;background:rgba(122,240,176,0.1);padding:0.8rem 1.5rem;border-radius:12px;border:2px solid rgba(122,240,176,0.3);'>
-                                            {codigo}
-                                        </span>
-                                    </div>
-                                    <p style='font-size:0.9rem;color:#c0d8e8;'>Digite este código no campo de verificação para ativar sua conta.</p>
-                                    <hr style='border-color:rgba(122,240,176,0.15);margin:1.5rem 0;'>
-                                    <p style='font-size:0.78rem;color:#888;'>Se você não solicitou este cadastro, ignore este e-mail.</p>
-                                </div>
-                                """,
+                                nome=nome_signup,
+                                email_usuario=email_signup,
+                                whatsapp=whatsapp_signup,
+                                imagem_perfil=None  # Novo usuário ainda não tem foto
                             )
+                            
+                            # 2. Função para enviar código de verificação após delay
+                            def enviar_codigo_com_delay():
+                                _time.sleep(20)  # Aguarda 20 segundos
+                                try:
+                                    notificador.enviar_codigo_verificacao(
+                                        destino=email_signup,
+                                        nome=nome_signup,
+                                        codigo=codigo
+                                    )
+                                except Exception:
+                                    pass  # Silencia erros no thread
+                            
+                            # Inicia thread para enviar código após 20 segundos
+                            thread = threading.Thread(target=enviar_codigo_com_delay, daemon=True)
+                            thread.start()
+                            
                             st.session_state.verificacao_pendente = True
                             st.session_state.show_email_dialog = True
                             st.rerun()
                         except Exception as e:
                             st.warning(
-                                f"Conta criada, mas não foi possível enviar o e-mail de verificação: {e}")
+                                f"Conta criada, mas não foi possível enviar os e-mails: {e}")
                             st.session_state.auth_mode = "login"
 
             st.markdown(
