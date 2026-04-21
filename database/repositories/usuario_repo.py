@@ -73,6 +73,45 @@ async def get_usuario_by_whatsapp(
     return result.scalar_one_or_none()
 
 
+async def get_usuario_by_asaas_id(
+    session: AsyncSession, asaas_customer_id: str,
+) -> Usuario | None:
+    """Busca usuário pelo ID do cliente no Asaas."""
+    result = await session.execute(
+        select(Usuario).where(Usuario.asaas_customer_id == asaas_customer_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_usuario_by_cpf_cnpj(
+    session: AsyncSession, cpf_cnpj: str,
+) -> Usuario | None:
+    """Busca usuário pelo CPF/CNPJ."""
+    result = await session.execute(
+        select(Usuario).where(Usuario.cpf_cnpj == cpf_cnpj)
+    )
+    return result.scalar_one_or_none()
+
+
+async def list_clientes(
+    session: AsyncSession,
+    *,
+    ativo: bool | None = None,
+    com_asaas: bool | None = None,
+) -> list[Usuario]:
+    """Lista apenas usuários com role='cliente'."""
+    stmt = select(Usuario).where(Usuario.role == "cliente")
+    if ativo is not None:
+        stmt = stmt.where(Usuario.ativo == ativo)
+    if com_asaas is True:
+        stmt = stmt.where(Usuario.asaas_customer_id.isnot(None))
+    elif com_asaas is False:
+        stmt = stmt.where(Usuario.asaas_customer_id.is_(None))
+    stmt = stmt.order_by(Usuario.nome)
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
 async def list_usuarios(
     session: AsyncSession,
     *,

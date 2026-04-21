@@ -476,3 +476,152 @@ class Notificador:
             assunto="✅ Chef Delivery — Teste de E-mail", 
             mensagem=mensagem
         )
+
+    def enviar_email_novo_cliente(
+        self,
+        nome: str,
+        email: str,
+        whatsapp: str,
+        cpf_cnpj: str | None = None,
+        asaas_customer_id: str | None = None,
+    ) -> dict:
+        """
+        Envia e-mail de notificação para o admin sobre novo cliente cadastrado.
+        
+        Signal de novo cadastro com todos os dados registrados.
+        
+        Args:
+            nome: Nome completo do cliente
+            email: E-mail do cliente
+            whatsapp: WhatsApp do cliente
+            cpf_cnpj: CPF/CNPJ do cliente (opcional)
+            asaas_customer_id: ID do cliente no Asaas (opcional)
+        """
+        from datetime import datetime
+        
+        data_cadastro = datetime.now().strftime("%d/%m/%Y às %H:%M")
+        
+        # Monta linhas da tabela de dados
+        linhas_dados = f"""
+            <tr>
+                <td style="padding:12px;color:#9ca3af;font-size:14px;border-bottom:1px solid rgba(122,240,176,0.1);width:40%;">
+                    👤 Nome
+                </td>
+                <td style="padding:12px;color:#e8f4ee;font-size:14px;text-align:right;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    <strong>{nome}</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:12px;color:#9ca3af;font-size:14px;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    📧 E-mail
+                </td>
+                <td style="padding:12px;color:#7af0b0;font-size:14px;text-align:right;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    {email}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:12px;color:#9ca3af;font-size:14px;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    📱 WhatsApp
+                </td>
+                <td style="padding:12px;color:#e8f4ee;font-size:14px;text-align:right;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    {whatsapp}
+                </td>
+            </tr>
+        """
+        
+        if cpf_cnpj:
+            linhas_dados += f"""
+            <tr>
+                <td style="padding:12px;color:#9ca3af;font-size:14px;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    🪪 CPF/CNPJ
+                </td>
+                <td style="padding:12px;color:#e8f4ee;font-size:14px;text-align:right;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    {cpf_cnpj}
+                </td>
+            </tr>
+            """
+        
+        linhas_dados += f"""
+            <tr>
+                <td style="padding:12px;color:#9ca3af;font-size:14px;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    📅 Data do Cadastro
+                </td>
+                <td style="padding:12px;color:#e8f4ee;font-size:14px;text-align:right;border-bottom:1px solid rgba(122,240,176,0.1);">
+                    {data_cadastro}
+                </td>
+            </tr>
+        """
+        
+        # Status do Asaas
+        if asaas_customer_id:
+            status_asaas = f"""
+            <div style="background:rgba(122,240,176,0.1);border:1px solid rgba(122,240,176,0.3);border-radius:12px;padding:15px;margin-top:20px;text-align:center;">
+                <p style="color:#7af0b0;font-size:14px;margin:0;">
+                    ✅ <strong>Sincronizado com Asaas</strong>
+                </p>
+                <p style="color:#9ca3af;font-size:12px;margin:8px 0 0;">
+                    ID Asaas: <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;color:#7af0b0;">{asaas_customer_id}</code>
+                </p>
+            </div>
+            """
+        else:
+            status_asaas = """
+            <div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;margin-top:20px;text-align:center;">
+                <p style="color:#ffc107;font-size:14px;margin:0;">
+                    ⚠️ <strong>Pendente sincronização com Asaas</strong>
+                </p>
+                <p style="color:#9ca3af;font-size:12px;margin:8px 0 0;">
+                    Cliente cadastrado apenas no banco local
+                </p>
+            </div>
+            """
+        
+        content = f"""
+        <div style="text-align:center;margin-bottom:25px;">
+            <h1 style="color:#7af0b0;margin:0;font-size:28px;font-weight:700;">
+                🎉 Novo Cliente Cadastrado!
+            </h1>
+            <p style="color:#c0d8e8;margin:12px 0 0;font-size:16px;">
+                Um novo cliente se cadastrou no Chef Delivery
+            </p>
+        </div>
+        
+        <div style="background:rgba(122,240,176,0.08);border-radius:16px;padding:25px;border:1px solid rgba(122,240,176,0.15);margin-bottom:20px;">
+            <h3 style="color:#7af0b0;margin:0 0 20px;font-size:18px;text-align:center;">
+                📋 Dados do Cadastro
+            </h3>
+            
+            <table style="width:100%;border-collapse:collapse;">
+                {linhas_dados}
+            </table>
+            
+            {status_asaas}
+        </div>
+        
+        <div style="background:linear-gradient(135deg,rgba(94,200,255,0.1),rgba(122,240,176,0.1));border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:#8ee7ff;margin:0 0 12px;font-size:15px;">
+                📊 Próximos Passos
+            </h3>
+            <ul style="color:#c0d8e8;margin:0;padding-left:20px;line-height:1.8;font-size:14px;">
+                <li>O cliente receberá um e-mail de boas-vindas</li>
+                <li>Um código de verificação será enviado em 20 segundos</li>
+                <li>Após verificação, a conta estará totalmente ativa</li>
+                <li>O cliente já pode fazer pedidos pelo chat</li>
+            </ul>
+        </div>
+        
+        <div style="border-top:1px solid rgba(122,240,176,0.1);padding-top:20px;text-align:center;">
+            <p style="color:#6b7280;font-size:12px;margin:0;">
+                Este é um e-mail automático de notificação do sistema Chef Delivery.
+            </p>
+        </div>
+        """
+        
+        mensagem = _email_base_template(content)
+        
+        # Envia para o admin (remetente configurado)
+        return self.enviar_email(
+            destino=self.email_remetente,
+            assunto=f"🎉 Novo Cliente: {nome} — Chef Delivery",
+            mensagem=mensagem
+        )

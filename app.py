@@ -817,6 +817,7 @@ def render_auth_sidebar() -> None:
                 nome_signup = st.text_input("Nome completo")
                 email_signup = st.text_input("E-mail")
                 whatsapp_signup = st.text_input("WhatsApp")
+                cpf_cnpj_signup = st.text_input("CPF/CNPJ (opcional)")
                 senha_signup = st.text_input("Senha", type="password")
                 senha_confirm = st.text_input(
                     "Confirmar senha", type="password")
@@ -832,8 +833,8 @@ def render_auth_sidebar() -> None:
                     import asyncio as _aio
                     import secrets as _secrets
                     from database import create_session as _db_session
-                    from database.services.auth_service import register_usuario
                     from database.services.profile_image_service import save_profile_image
+                    from database.services.asaas_customer_service import register_cliente_with_asaas
                     from notification import Notificador
 
                     async def _do_register():
@@ -847,23 +848,32 @@ def render_auth_sidebar() -> None:
                             )
                         session = await _db_session()
                         try:
-                            usuario = await register_usuario(
+                            # Registra no banco local E no Asaas simultaneamente
+                            result = await register_cliente_with_asaas(
                                 session,
                                 nome=nome_signup,
                                 email=email_signup,
                                 whatsapp=whatsapp_signup,
                                 password=senha_signup,
-                                role="cliente",
+                                cpf_cnpj=cpf_cnpj_signup if cpf_cnpj_signup else None,
                                 imagem_perfil=img_filename,
                             )
-                            return usuario.id
+                            return result
                         finally:
                             await session.close()
 
                     try:
-                        usuario_id = _aio.run(_do_register())
+                        result = _aio.run(_do_register())
+                        if result.success and result.usuario:
+                            usuario_id = result.usuario.id
+                            asaas_id = result.usuario.asaas_customer_id
+                        else:
+                            usuario_id = None
+                            asaas_id = None
+                            st.error(f"Erro ao criar conta: {result.error}")
                     except Exception as e:
                         usuario_id = None
+                        asaas_id = None
                         st.error(f"Erro ao criar conta: {e}")
 
                     if usuario_id:
@@ -887,7 +897,16 @@ def render_auth_sidebar() -> None:
                                 imagem_perfil=None  # Novo usuário ainda não tem foto
                             )
                             
-                            # 2. Função para enviar código de verificação após delay
+                            # 2. Envia notificação de novo cliente para o admin
+                            notificador.enviar_email_novo_cliente(
+                                nome=nome_signup,
+                                email=email_signup,
+                                whatsapp=whatsapp_signup,
+                                cpf_cnpj=cpf_cnpj_signup if cpf_cnpj_signup else None,
+                                asaas_customer_id=asaas_id,
+                            )
+                            
+                            # 3. Função para enviar código de verificação após delay
                             def enviar_codigo_com_delay():
                                 _time.sleep(20)  # Aguarda 20 segundos
                                 try:
@@ -1070,8 +1089,10 @@ else:
         from pgs.preparacao import showPreparacao
         from pgs.produtos import showProdutos
         from pgs.teste_api import showTesteApi
+        from pgs.teste_asaas_clientes import showTesteAsaasClientes
 
         mp.add_page("Teste da API", showTesteApi, "bug-fill")
+        mp.add_page("Teste Asaas Clientes", showTesteAsaasClientes, "person-badge")
         mp.add_page("Clientes", showClientes, "people-fill")
         mp.add_page("Pagamentos", showPagamentos, "credit-card-fill")
         mp.add_page("Produtos", showProdutos, "box-seam-fill")

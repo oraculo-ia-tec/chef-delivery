@@ -26,6 +26,9 @@ class Usuario(ModelBase):
     email_verificado = sa.Column(sa.Boolean, nullable=False, default=False)
     imagem_perfil = sa.Column(sa.String(500), nullable=True)
 
+    # Integração Asaas
+    asaas_customer_id = sa.Column(sa.String(100), unique=True, nullable=True, index=True)
+
     # Endereço
     endereco = sa.Column(sa.String(500), nullable=True)
     numero = sa.Column(sa.String(20), nullable=True)
