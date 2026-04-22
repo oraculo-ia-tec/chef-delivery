@@ -31,29 +31,66 @@ def _get_secret(path: str, default=None):
         return default
 
 
-GROQ_API_KEY = (
-    _get_secret("groq.GROQ_API_KEY")
-    or _get_secret("api_keys.GROQ_API_KEY")
-    or os.getenv("GROQ_API_KEY", "")
-)
+def _resolve_groq_api_key() -> str:
+    """Busca a chave GROQ em múltiplos locais possíveis (runtime).
 
-ASAAS_API_KEY = (
-    _get_secret("asaas.ASAAS_API_KEY")
-    or _get_secret("api_keys.ASAAS_API_KEY")
-    or os.getenv("ASAAS_API_KEY", "")
-)
+    Ordem: variável de ambiente -> st.secrets em várias seções comuns.
+    Avaliado em runtime para evitar problemas de import time no Streamlit Cloud.
+    """
+    env_value = os.getenv("GROQ_API_KEY", "")
+    if env_value:
+        return env_value
+    candidates = [
+        "GROQ_API_KEY",
+        "groq.GROQ_API_KEY",
+        "api_keys.GROQ_API_KEY",
+        "default.GROQ_API_KEY",
+    ]
+    for path in candidates:
+        value = _get_secret(path)
+        if value:
+            return str(value)
+    return ""
 
-ASAAS_ENVIRONMENT = (
-    _get_secret("asaas.ASAAS_ENVIRONMENT")
-    or os.getenv("ASAAS_ENVIRONMENT", "sandbox")
-).lower()
+
+def _resolve_asaas_api_key() -> str:
+    env_value = os.getenv("ASAAS_API_KEY", "")
+    if env_value:
+        return env_value
+    candidates = [
+        "ASAAS_API_KEY",
+        "asaas.ASAAS_API_KEY",
+        "api_keys.ASAAS_API_KEY",
+        "default.ASAAS_API_KEY",
+    ]
+    for path in candidates:
+        value = _get_secret(path)
+        if value:
+            return str(value)
+    return ""
+
+
+def _resolve_asaas_environment() -> str:
+    value = (
+        os.getenv("ASAAS_ENVIRONMENT")
+        or _get_secret("asaas.ASAAS_ENVIRONMENT")
+        or _get_secret("ASAAS_ENVIRONMENT")
+        or "sandbox"
+    )
+    return str(value).lower()
+
+
+GROQ_API_KEY = _resolve_groq_api_key()
+ASAAS_API_KEY = _resolve_asaas_api_key()
+ASAAS_ENVIRONMENT = _resolve_asaas_environment()
 
 
 @st.cache_resource(show_spinner=False)
 def get_groq_client():
-    if not GROQ_API_KEY:
+    key = GROQ_API_KEY or _resolve_groq_api_key()
+    if not key:
         return None
-    return Groq(api_key=GROQ_API_KEY)
+    return Groq(api_key=key)
 
 
 @st.cache_data(show_spinner=False)
@@ -398,9 +435,15 @@ def showPedido():
     _render_payment_result()
 
     if not GROQ_API_KEY:
-        st.warning(
-            "A chave GROQ_API_KEY não foi encontrada. Verifique o .env ou o secrets.toml."
-        )
+        # Re-tenta em runtime caso o secrets só tenha sido carregado depois do import
+        runtime_key = _resolve_groq_api_key()
+        if runtime_key:
+            globals()["GROQ_API_KEY"] = runtime_key
+            get_groq_client.clear()
+        else:
+            st.warning(
+                "A chave GROQ_API_KEY não foi encontrada. Verifique o .env ou o secrets.toml."
+            )
 
     client = get_groq_client()
 
